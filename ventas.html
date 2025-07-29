@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas | Sublimaciones Jeziel</title>
+    <link rel="icon" href="logo/logo.jpg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e3e6ed 100%);
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .erp-title {
+            font-weight: 700;
+            color: #1a2235;
+            letter-spacing: 2px;
+            font-size: 2.1rem;
+        }
+        .table thead {
+            background: #1a2235;
+            color: #fff;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #ff7e5f 0%, #feb47b 100%);
+            border: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #feb47b 0%, #ff7e5f 100%);
+        }
+        .icon-erp {
+            font-size: 2rem;
+            color: #ff7e5f;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background:#1a2235;">
+        <div class="container-fluid">
+            <a class="navbar-brand erp-title d-flex align-items-center gap-2" href="#">
+                <img src="logo/logo.jpg" alt="Logo" style="height:38px;width:38px;border-radius:8px;object-fit:cover;box-shadow:0 2px 8px #0002;">
+                <span style="font-size:1.5rem;font-weight:700;letter-spacing:1px;">Sublimaciones Jeziel</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#">Ventas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="inventario.html">Inventario</a></li>
+                    <li class="nav-item"><a class="nav-link" href="clientes.html">Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="compras.html">Compras</a></li>
+                    <li class="nav-item"><a class="nav-link" href="finanzas.html">Finanzas</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <strong>Registrar Venta</strong>
+                    </div>
+                    <div class="card-body">
+                        <form id="formVenta" autocomplete="off" onsubmit="event.preventDefault(); agregarVenta();">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-3">
+                                    <label class="form-label">Fecha</label>
+                                    <input type="date" class="form-control" id="fechaVenta" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Código Cliente</label>
+                                    <input type="text" class="form-control" id="codigoClienteVenta" required>
+                                    <div class="form-text"><span id="nombreClienteVenta" class="fw-semibold"></span></div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Código Producto</label>
+                                    <input type="text" class="form-control" id="codigoProductoVenta" required>
+                                    <div class="form-text"><span id="nombreProductoVenta" class="fw-semibold"></span></div>
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="form-label">Cantidad</label>
+                                    <input type="number" min="1" class="form-control" id="cantidadVenta" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Total</label>
+                                    <input type="text" class="form-control" id="totalVenta" readonly>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-end">
+                                <button type="submit" class="btn btn-primary">Registrar Venta</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <strong>Ventas Registradas</strong>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0" id="tablaVentas">
+                                <thead>
+                                    <tr>
+                                        <th>N° Factura</th>
+                                        <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Las ventas se renderizan aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="text-center mt-5 mb-3 text-muted">
+        &copy; 2025 Sublimaciones Jeziel. Todos los derechos reservados.
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Ventas persistentes en localStorage
+    function cargarVentas() {
+        const data = localStorage.getItem('ventasJeziel');
+        if (data) {
+            try {
+                return JSON.parse(data);
+            } catch {
+                return [];
+            }
+        }
+        return [];
+    }
+    function guardarVentas() {
+        localStorage.setItem('ventasJeziel', JSON.stringify(ventas));
+    }
+    // Número de factura/tique incremental
+    function getNextNumeroFactura() {
+        let last = parseInt(localStorage.getItem('ultimoNumeroFactura') || '0');
+        last++;
+        localStorage.setItem('ultimoNumeroFactura', last);
+        return last;
+    }
+    let ventas = cargarVentas();
+
+    function renderVentas() {
+        const tbody = document.querySelector('#tablaVentas tbody');
+        tbody.innerHTML = '';
+        ventas.forEach((item, idx) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.numeroFactura || ''}</td>
+                    <td>${item.fecha}</td>
+                    <td>${item.codigoCliente || ''} <span class="text-muted small">${item.nombreCliente ? '('+item.nombreCliente+')' : ''}</span></td>
+                    <td>${item.codigoProducto || ''} <span class="text-muted small">${item.nombreProducto ? '('+item.nombreProducto+')' : ''}</span></td>
+                    <td>${item.cantidad}</td>
+                    <td>$${parseFloat(item.total).toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success me-1" onclick="generarFactura(${idx})" title="Generar factura"><i class="bi bi-file-earmark-text"></i></button>
+                        <button class="btn btn-sm btn-info me-1" onclick="generarTique(${idx})" title="Generar tique"><i class="bi bi-receipt"></i></button>
+                        <button class="btn btn-sm btn-warning me-1" onclick="editarVenta(${idx})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarVenta(${idx})"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        guardarVentas();
+    }
+    function eliminarVenta(idx) {
+        if(confirm('¿Eliminar esta venta?')) {
+            ventas.splice(idx, 1);
+            renderVentas();
+        }
+    }
+
+    // Generar Factura PDF
+    function generarFactura(idx) {
+        const venta = ventas[idx];
+        const jsPDFLib = window.jspdf || window.jsPDF;
+        if (!jsPDFLib) {
+            alert('jsPDF no está cargado.');
+            return;
+        }
+        const doc = new jsPDFLib.jsPDF ? new jsPDFLib.jsPDF() : new jsPDFLib();
+        // Encabezado profesional con datos de empresa
+        doc.setFillColor(26,34,53); // azul oscuro
+        doc.rect(0, 0, 210, 38, 'F');
+        doc.setFont('helvetica','bold');
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(16);
+        doc.text('Sublimaciones Jeziel', 14, 14);
+        doc.setFontSize(10);
+        doc.text('NIT: 12345678900', 14, 20);
+        doc.text('Dirección: Av. Principal , San Jacinto', 14, 25);
+        doc.text('Tel: 7946-8807', 14, 30);
+        doc.setFontSize(20);
+        doc.text('Factura de Venta', 180, 18, {align:'right'});
+        doc.setFontSize(12);
+        doc.setTextColor(0,0,0);
+        doc.setFont('helvetica','normal');
+        doc.text(`N° Factura: ${venta.numeroFactura || ''}`, 14, 46);
+        doc.text(`Fecha: ${venta.fecha}`, 150, 46);
+        doc.setDrawColor(200,200,200);
+        doc.line(14, 50, 196, 50);
+        doc.setFont('helvetica','bold');
+        doc.text('Datos del Cliente', 14, 58);
+        doc.setFont('helvetica','normal');
+        doc.text(`Nombre: ${venta.nombreCliente || ''}`, 14, 66);
+        doc.text(`Código: ${venta.codigoCliente || ''}`, 100, 66);
+        doc.setFont('helvetica','bold');
+        doc.text('Detalle de Venta', 14, 78);
+        doc.setFont('helvetica','normal');
+        doc.text(`Producto: ${venta.nombreProducto || ''}`, 14, 86);
+        doc.text(`Código: ${venta.codigoProducto || ''}`, 100, 86);
+        doc.text(`Cantidad: ${venta.cantidad}`, 14, 94);
+        doc.text(`Total: $${parseFloat(venta.total).toFixed(2)}`, 100, 94);
+        doc.setDrawColor(26,34,53);
+        doc.rect(14, 108, 182, 16, 'S');
+        doc.setFont('helvetica','bold');
+        doc.text('Gracias por su compra.', 105, 120, {align:'center'});
+        doc.save(`Factura_${venta.numeroFactura || ''}_${venta.fecha}.pdf`);
+    }
+
+    // Generar Tique PDF
+    function generarTique(idx) {
+        const venta = ventas[idx];
+        const jsPDFLib = window.jspdf || window.jsPDF;
+        if (!jsPDFLib) {
+            alert('jsPDF no está cargado.');
+            return;
+        }
+        const doc = new jsPDFLib.jsPDF ? new jsPDFLib.jsPDF({format:[80,120]}) : new jsPDFLib({format:[80,120]});
+        // Encabezado profesional tique con datos de empresa
+        doc.setFillColor(26,34,53);
+        doc.rect(0, 0, 80, 24, 'F');
+        doc.setFont('helvetica','bold');
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(9);
+        doc.text('Sublimaciones Jeziel', 4, 8);
+        doc.setFontSize(6.5);
+        doc.text('NIT: 12345678900', 4, 12);
+        doc.text('Av. Principal , San Jacinto', 4, 16);
+        doc.text('Tel: 7946-8807', 4, 20);
+        doc.setFontSize(11);
+        doc.text('Tique de Compra', 76, 12, {align:'right'});
+        doc.setFontSize(8);
+        doc.setTextColor(0,0,0);
+        doc.setFont('helvetica','normal');
+        doc.text(`N°: ${venta.numeroFactura || ''}`, 4, 28);
+        doc.text(`Fecha: ${venta.fecha}`, 4, 34);
+        doc.text(`Cliente: ${venta.nombreCliente || ''}`, 4, 40);
+        doc.text(`Producto: ${venta.nombreProducto || ''}`, 4, 46);
+        doc.text(`Cantidad: ${venta.cantidad}`, 4, 52);
+        doc.text(`Total: $${parseFloat(venta.total).toFixed(2)}`, 4, 58);
+        doc.setDrawColor(26,34,53);
+        doc.rect(4, 66, 72, 10, 'S');
+        doc.setFont('helvetica','bold');
+        doc.text('¡Gracias por su compra!', 40, 73, {align:'center'});
+        doc.save(`Tique_${venta.numeroFactura || ''}_${venta.fecha}.pdf`);
+    }
+
+    // Buscar nombre de cliente por código
+    document.getElementById('codigoClienteVenta').addEventListener('input', function() {
+        const codigo = this.value.trim();
+        let nombre = '';
+        try {
+            const clientes = JSON.parse(localStorage.getItem('clientesJeziel')) || [];
+            const cliente = clientes.find(c => c.codigo === codigo);
+            if(cliente) nombre = cliente.nombre;
+        } catch {}
+        document.getElementById('nombreClienteVenta').textContent = nombre;
+    });
+
+    // Buscar nombre de producto por código
+    document.getElementById('codigoProductoVenta').addEventListener('input', function() {
+        actualizarTotalVenta();
+    });
+
+    document.getElementById('cantidadVenta').addEventListener('input', function() {
+        actualizarTotalVenta();
+    });
+
+    function actualizarTotalVenta() {
+        const codigo = document.getElementById('codigoProductoVenta').value.trim();
+        let nombre = '';
+        let precio = 0;
+        try {
+            const inventario = JSON.parse(localStorage.getItem('inventarioJeziel')) || [];
+            const prod = inventario.find(p => p.codigo === codigo);
+            if(prod) {
+                nombre = prod.nombre;
+                precio = parseFloat(prod.precioVenta) || 0;
+            }
+        } catch {}
+        document.getElementById('nombreProductoVenta').textContent = nombre;
+        const cantidad = parseInt(document.getElementById('cantidadVenta').value) || 0;
+        document.getElementById('totalVenta').value = (precio * cantidad).toFixed(2);
+    }
+    // Registrar venta con número de factura automático
+    function agregarVenta() {
+        const fecha = document.getElementById('fechaVenta').value;
+        const codigoCliente = document.getElementById('codigoClienteVenta').value.trim();
+        const codigoProducto = document.getElementById('codigoProductoVenta').value.trim();
+        const cantidad = parseInt(document.getElementById('cantidadVenta').value) || 0;
+        const total = parseFloat(document.getElementById('totalVenta').value) || 0;
+        let nombreCliente = '';
+        let nombreProducto = '';
+        try {
+            const clientes = JSON.parse(localStorage.getItem('clientesJeziel')) || [];
+            const cliente = clientes.find(c => c.codigo === codigoCliente);
+            if(cliente) nombreCliente = cliente.nombre;
+        } catch {}
+        try {
+            const inventario = JSON.parse(localStorage.getItem('inventarioJeziel')) || [];
+            const prod = inventario.find(p => p.codigo === codigoProducto);
+            if(prod) nombreProducto = prod.nombre;
+        } catch {}
+        if(!fecha || !codigoCliente || !codigoProducto || cantidad <= 0 || total <= 0) {
+            alert('Completa todos los campos correctamente.');
+            return;
+        }
+        const numeroFactura = getNextNumeroFactura();
+        ventas.push({
+            numeroFactura,
+            fecha,
+            codigoCliente,
+            nombreCliente,
+            codigoProducto,
+            nombreProducto,
+            cantidad,
+            total
+        });
+        guardarVentas();
+        renderVentas();
+        document.getElementById('formVenta').reset();
+        document.getElementById('nombreClienteVenta').textContent = '';
+        document.getElementById('nombreProductoVenta').textContent = '';
+        document.getElementById('totalVenta').value = '';
+    }
+    renderVentas();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
