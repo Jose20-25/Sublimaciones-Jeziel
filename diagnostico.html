@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico - Facturas</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        select, input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Diagnóstico de Problemas - Sistema de Facturas</h1>
+    
+    <div class="debug">
+        <h3>1. Verificar datos en localStorage</h3>
+        <button onclick="verificarDatos()">Verificar Datos</button>
+        <div id="datosResult"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>2. Crear datos de prueba</h3>
+        <button onclick="crearDatosPrueba()">Crear Datos de Prueba</button>
+        <div id="pruebaResult"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>3. Probar selección de cliente</h3>
+        <select id="testClienteSelect">
+            <option value="">Seleccionar cliente...</option>
+        </select>
+        <button onclick="cargarClientesTest()">Cargar Clientes</button>
+        <button onclick="probarSeleccion()">Probar Selección</button>
+        <div id="seleccionResult"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>4. Probar creación de factura</h3>
+        <div>
+            <label>Cliente:</label>
+            <select id="clienteFacturaTest">
+                <option value="">Seleccionar cliente...</option>
+            </select>
+        </div>
+        <div>
+            <label>Fecha emisión:</label>
+            <input type="date" id="fechaEmisionTest">
+        </div>
+        <div>
+            <label>Fecha vencimiento:</label>
+            <input type="date" id="fechaVencimientoTest">
+        </div>
+        <div>
+            <label>Descripción:</label>
+            <input type="text" id="descripcionTest" placeholder="Descripción del producto/servicio">
+        </div>
+        <div>
+            <label>Cantidad:</label>
+            <input type="number" id="cantidadTest" value="1" min="1">
+        </div>
+        <div>
+            <label>Precio:</label>
+            <input type="number" id="precioTest" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <button onclick="probarGuardarFactura()">Probar Guardar Factura</button>
+        <div id="facturaResult"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>5. Ver facturas guardadas</h3>
+        <button onclick="mostrarFacturasGuardadas()">Mostrar Facturas</button>
+        <div id="facturasGuardadas"></div>
+    </div>
+
+    <script>
+        let clientes = [];
+        let inventario = [];
+        let facturas = [];
+        
+        function verificarDatos() {
+            const result = document.getElementById('datosResult');
+            
+            // Cargar datos del localStorage
+            clientes = JSON.parse(localStorage.getItem('clientesJeziel')) || [];
+            inventario = JSON.parse(localStorage.getItem('inventarioJeziel')) || [];
+            facturas = JSON.parse(localStorage.getItem('facturasJeziel')) || [];
+            
+            let html = '<h4>Datos encontrados:</h4>';
+            html += `<p><strong>Clientes:</strong> ${clientes.length} registros</p>`;
+            html += `<p><strong>Inventario:</strong> ${inventario.length} registros</p>`;
+            html += `<p><strong>Facturas:</strong> ${facturas.length} registros</p>`;
+            
+            if (clientes.length > 0) {
+                html += '<h5>Clientes:</h5><ul>';
+                clientes.forEach(c => html += `<li>ID: ${c.id}, Nombre: ${c.nombre}</li>`);
+                html += '</ul>';
+            }
+            
+            if (inventario.length > 0) {
+                html += '<h5>Inventario:</h5><ul>';
+                inventario.forEach(i => html += `<li>ID: ${i.id}, Nombre: ${i.nombre}, Precio: $${i.precio}</li>`);
+                html += '</ul>';
+            }
+            
+            result.innerHTML = html;
+            result.className = clientes.length > 0 ? 'debug success' : 'debug error';
+        }
+        
+        function crearDatosPrueba() {
+            const clientesEjemplo = [
+                {id: '1', nombre: 'Juan Pérez', email: 'juan@email.com', telefono: '555-0101'},
+                {id: '2', nombre: 'María García', email: 'maria@email.com', telefono: '555-0102'},
+                {id: '3', nombre: 'Carlos López', email: 'carlos@email.com', telefono: '555-0103'}
+            ];
+            
+            const inventarioEjemplo = [
+                {id: '1', nombre: 'Camiseta Sublimada', precio: 250.00, stock: 50},
+                {id: '2', nombre: 'Taza Personalizada', precio: 150.00, stock: 30},
+                {id: '3', nombre: 'Mouse Pad Custom', precio: 100.00, stock: 25}
+            ];
+            
+            localStorage.setItem('clientesJeziel', JSON.stringify(clientesEjemplo));
+            localStorage.setItem('inventarioJeziel', JSON.stringify(inventarioEjemplo));
+            
+            clientes = clientesEjemplo;
+            inventario = inventarioEjemplo;
+            
+            const result = document.getElementById('pruebaResult');
+            result.innerHTML = '<p class="success">✓ Datos de prueba creados exitosamente</p>';
+            result.className = 'debug success';
+        }
+        
+        function cargarClientesTest() {
+            const select = document.getElementById('testClienteSelect');
+            const selectFactura = document.getElementById('clienteFacturaTest');
+            
+            // Limpiar opciones existentes
+            select.innerHTML = '<option value="">Seleccionar cliente...</option>';
+            selectFactura.innerHTML = '<option value="">Seleccionar cliente...</option>';
+            
+            if (clientes.length === 0) {
+                clientes = JSON.parse(localStorage.getItem('clientesJeziel')) || [];
+            }
+            
+            console.log('Cargando clientes:', clientes);
+            
+            clientes.forEach(cliente => {
+                select.innerHTML += `<option value="${cliente.id}">${cliente.nombre}</option>`;
+                selectFactura.innerHTML += `<option value="${cliente.id}">${cliente.nombre}</option>`;
+            });
+            
+            const result = document.getElementById('seleccionResult');
+            result.innerHTML = `<p>✓ ${clientes.length} clientes cargados en los selects</p>`;
+        }
+        
+        function probarSeleccion() {
+            const select = document.getElementById('testClienteSelect');
+            const clienteId = select.value;
+            const clienteNombre = select.options[select.selectedIndex].text;
+            
+            const result = document.getElementById('seleccionResult');
+            
+            if (clienteId) {
+                const cliente = clientes.find(c => c.id === clienteId);
+                result.innerHTML = `
+                    <p><strong>Cliente seleccionado:</strong></p>
+                    <p>ID: ${clienteId}</p>
+                    <p>Nombre mostrado: ${clienteNombre}</p>
+                    <p>Cliente encontrado: ${cliente ? cliente.nombre : 'NO ENCONTRADO'}</p>
+                    <p>Tipo de ID: ${typeof clienteId}</p>
+                    <p>Tipo de ID en datos: ${typeof cliente?.id}</p>
+                `;
+                result.className = cliente ? 'debug success' : 'debug error';
+            } else {
+                result.innerHTML = '<p class="error">No se ha seleccionado ningún cliente</p>';
+                result.className = 'debug error';
+            }
+        }
+        
+        function probarGuardarFactura() {
+            const clienteId = document.getElementById('clienteFacturaTest').value;
+            const fechaEmision = document.getElementById('fechaEmisionTest').value;
+            const fechaVencimiento = document.getElementById('fechaVencimientoTest').value;
+            const descripcion = document.getElementById('descripcionTest').value;
+            const cantidad = parseFloat(document.getElementById('cantidadTest').value) || 0;
+            const precio = parseFloat(document.getElementById('precioTest').value) || 0;
+            
+            const result = document.getElementById('facturaResult');
+            let errores = [];
+            
+            console.log('Datos del formulario:', {
+                clienteId, fechaEmision, fechaVencimiento, descripcion, cantidad, precio
+            });
+            
+            // Validaciones
+            if (!clienteId) errores.push('Cliente no seleccionado');
+            if (!fechaEmision) errores.push('Fecha de emisión vacía');
+            if (!fechaVencimiento) errores.push('Fecha de vencimiento vacía');
+            if (!descripcion) errores.push('Descripción vacía');
+            if (cantidad <= 0) errores.push('Cantidad inválida');
+            if (precio <= 0) errores.push('Precio inválido');
+            
+            if (errores.length > 0) {
+                result.innerHTML = '<p class="error">Errores encontrados:</p><ul>' + 
+                    errores.map(e => `<li>${e}</li>`).join('') + '</ul>';
+                result.className = 'debug error';
+                return;
+            }
+            
+            // Verificar cliente
+            const cliente = clientes.find(c => c.id === clienteId);
+            if (!cliente) {
+                result.innerHTML = `<p class="error">Cliente con ID "${clienteId}" no encontrado</p>`;
+                result.className = 'debug error';
+                return;
+            }
+            
+            // Crear factura
+            const subtotal = cantidad * precio;
+            const iva = subtotal * 0.16;
+            const total = subtotal + iva;
+            
+            const factura = {
+                id: Date.now().toString(),
+                numero: `FAC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String((facturas.length + 1)).padStart(4, '0')}`,
+                clienteId: clienteId,
+                fechaEmision,
+                fechaVencimiento,
+                metodoPago: 'Efectivo',
+                estado: 'Pendiente',
+                notas: '',
+                lineas: [{
+                    productoId: 'servicio',
+                    descripcion,
+                    cantidad,
+                    precio,
+                    subtotal
+                }],
+                subtotal,
+                iva,
+                total,
+                fechaCreacion: new Date().toISOString()
+            };
+            
+            console.log('Factura creada:', factura);
+            
+            try {
+                // Cargar facturas existentes
+                let facturasExistentes = JSON.parse(localStorage.getItem('facturasJeziel')) || [];
+                facturasExistentes.push(factura);
+                
+                // Guardar en localStorage
+                localStorage.setItem('facturasJeziel', JSON.stringify(facturasExistentes));
+                
+                facturas = facturasExistentes;
+                
+                result.innerHTML = `
+                    <p class="success">✓ Factura guardada exitosamente</p>
+                    <p><strong>Número:</strong> ${factura.numero}</p>
+                    <p><strong>Cliente:</strong> ${cliente.nombre}</p>
+                    <p><strong>Total:</strong> $${total.toFixed(2)}</p>
+                `;
+                result.className = 'debug success';
+                
+            } catch (error) {
+                console.error('Error guardando factura:', error);
+                result.innerHTML = `<p class="error">Error al guardar: ${error.message}</p>`;
+                result.className = 'debug error';
+            }
+        }
+        
+        function mostrarFacturasGuardadas() {
+            const result = document.getElementById('facturasGuardadas');
+            
+            const facturasGuardadas = JSON.parse(localStorage.getItem('facturasJeziel')) || [];
+            
+            if (facturasGuardadas.length === 0) {
+                result.innerHTML = '<p>No hay facturas guardadas</p>';
+                return;
+            }
+            
+            let html = '<h4>Facturas encontradas:</h4>';
+            facturasGuardadas.forEach(factura => {
+                const cliente = clientes.find(c => c.id === factura.clienteId);
+                html += `
+                    <div style="border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 5px;">
+                        <p><strong>Número:</strong> ${factura.numero}</p>
+                        <p><strong>Cliente ID:</strong> ${factura.clienteId}</p>
+                        <p><strong>Cliente Nombre:</strong> ${cliente ? cliente.nombre : 'NO ENCONTRADO'}</p>
+                        <p><strong>Total:</strong> $${parseFloat(factura.total).toFixed(2)}</p>
+                        <p><strong>Estado:</strong> ${factura.estado}</p>
+                    </div>
+                `;
+            });
+            
+            result.innerHTML = html;
+        }
+        
+        // Establecer fechas por defecto
+        window.onload = function() {
+            const hoy = new Date();
+            const vencimiento = new Date(hoy.getTime() + 30 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('fechaEmisionTest').value = hoy.toISOString().split('T')[0];
+            document.getElementById('fechaVencimientoTest').value = vencimiento.toISOString().split('T')[0];
+        };
+    </script>
+</body>
+</html>

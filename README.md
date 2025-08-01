@@ -9,6 +9,7 @@ Sistema ERP web profesional para la gestión de negocios de sublimación y perso
 - **Ventas**: registro, edición, eliminación, generación de factura y tique en PDF, integración con clientes e inventario.
 - **Clientes**: alta, edición, eliminación y búsqueda de clientes.
 - **Compras**: registro de compras, actualización automática de inventario, integración con finanzas.
+- **Facturas**: generación profesional de facturas, control de estados (Pendiente, Pagada, Vencida, Cancelada), cálculo automático de IVA, exportación a PDF.
 - **Finanzas**: ingresos, egresos, balance automático, conexión con compras.
 - **Reportes**: filtros por fecha y tipo, exportación a PDF/Excel, gráficas de ventas, compras y finanzas.
 - **Interfaz profesional y responsiva**: Bootstrap 5, Chart.js, jsPDF, SheetJS.
@@ -21,6 +22,7 @@ Sistema ERP web profesional para la gestión de negocios de sublimación y perso
 - `ventas.html`: Gestión de ventas y generación de documentos.
 - `clientes.html`: Gestión de clientes.
 - `compras.html`: Registro de compras.
+- `facturas.html`: Sistema de facturación profesional.
 - `finanzas.html`: Módulo de finanzas.
 - `reportes.html`: Reportes y estadísticas.
 - `logo/logo.jpg`: Logo de la empresa.
