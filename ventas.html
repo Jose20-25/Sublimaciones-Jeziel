@@ -6,309 +6,102 @@
     <title>Ventas | Sublimaciones Jeziel</title>
     <link rel="icon" href="logo/logo.jpg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/modern-erp.css">
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --light-bg: #ecf0f1;
-            --card-bg: #ffffff;
-            --text-primary: #2c3e50;
-            --text-secondary: #7f8c8d;
-            --shadow-light: 0 2px 10px rgba(0,0,0,0.06);
-            --shadow-medium: 0 4px 20px rgba(0,0,0,0.08);
-            --shadow-heavy: 0 8px 30px rgba(0,0,0,0.12);
-            --border-radius: 12px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Estilos específicos para ventas */
+        .form-text {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
         }
         
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-        
-        .sidebar {
-            background: linear-gradient(180deg, var(--primary-color) 0%, #34495e 100%);
-            border-right: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.8) !important;
-            font-weight: 500;
-            padding: 12px 16px;
-            margin: 4px 0;
+        .alert-success {
+            background: var(--gradient-success);
+            border: none;
+            color: white;
             border-radius: var(--border-radius);
-            transition: var(--transition);
-            border-left: 3px solid transparent;
         }
         
-        .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-            color: #fff !important;
-            transform: translateX(5px);
-            border-left-color: var(--secondary-color);
-        }
-        
-        .sidebar .nav-link.active {
-            background: linear-gradient(90deg, var(--secondary-color), #5dade2);
-            color: #fff !important;
-            box-shadow: var(--shadow-medium);
-            border-left-color: #fff;
-        }
-        
-        .logo-img {
-            width: 55px;
-            height: 55px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.2);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: var(--transition);
-        }
-        
-        .logo-img:hover {
-            transform: scale(1.1);
-            border-color: var(--secondary-color);
-        }
-        
-        .erp-title {
-            font-weight: 700;
-            color: var(--primary-color);
-            letter-spacing: -0.5px;
-            font-size: 2.1rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .card {
-            background: var(--card-bg);
+        .table-responsive {
             border-radius: var(--border-radius);
-            border: none;
-            box-shadow: var(--shadow-light);
-            transition: var(--transition);
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
-            opacity: 0;
-            transition: var(--transition);
-        }
-        
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-heavy);
-        }
-        
-        .card:hover::before {
-            opacity: 1;
-        }
-        
-        .card-header {
-            background: linear-gradient(135deg, var(--primary-color), #34495e) !important;
-            border: none;
-            color: white !important;
-            font-weight: 600;
-            padding: 1rem 1.5rem;
-        }
-        
-        .table {
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
-        
-        .table thead {
-            background: linear-gradient(135deg, var(--primary-color), #34495e);
-            color: #fff;
-        }
-        
-        .table thead th {
-            border: none;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            padding: 1rem;
-        }
-        
-        .table tbody tr {
-            transition: var(--transition);
-        }
-        
-        .table tbody tr:hover {
-            background: rgba(52, 152, 219, 0.05);
-            transform: scale(1.01);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--secondary-color), #5dade2);
-            border: none;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: var(--shadow-light);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: var(--transition);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5dade2, var(--secondary-color));
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color), #2ecc71);
-            border: none;
-            box-shadow: var(--shadow-light);
-            transition: var(--transition);
-        }
-        
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .btn-info {
-            background: linear-gradient(135deg, #17a2b8, #20c997);
-            border: none;
-            box-shadow: var(--shadow-light);
-            transition: var(--transition);
-        }
-        
-        .btn-info:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, var(--warning-color), #f1c40f);
-            border: none;
-            box-shadow: var(--shadow-light);
-            transition: var(--transition);
-        }
-        
-        .btn-warning:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, var(--accent-color), #e55454);
-            border: none;
-            box-shadow: var(--shadow-light);
-            transition: var(--transition);
-        }
-        
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-        
-        .form-control, .form-select {
-            border: 2px solid rgba(52, 152, 219, 0.2);
-            border-radius: 8px;
-            padding: 12px;
-            transition: var(--transition);
-            background: var(--card-bg);
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-            transform: translateY(-1px);
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-        
-        .icon-erp {
-            font-size: 2rem;
-            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-right: 0.5rem;
-        }
-        
-        /* Scrollbar personalizado */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--light-bg);
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--secondary-color);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-color);
+            box-shadow: var(--shadow-sm);
         }
     </style>
 </head>
 <body>
-    <div class="d-flex" style="min-height:100vh;">
-        <!-- Sidebar -->
-        <nav class="sidebar d-flex flex-column flex-shrink-0 p-3" style="width: 250px; background: #1a2235; min-height:100vh;">
-            <a href="index.html" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                <img src="logo/logo.jpg" alt="Logo" class="logo-img me-2">
-                <span class="fs-4 fw-bold">Sublimaciones Jeziel</span>
-            </a>
-            <hr style="border-color: #2d3650;">
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item mb-2"><a href="index.html" class="nav-link text-white"><i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span></a></li>
-                <li class="nav-item mb-2"><a href="clientes.html" class="nav-link text-white"><i class="bi bi-people-fill me-2"></i><span>Clientes</span></a></li>
-                <li class="nav-item mb-2"><a href="ventas.html" class="nav-link active" style="background:#ff7e5f;"><i class="bi bi-bag-check-fill me-2"></i><span>Ventas</span></a></li>
-                <li class="nav-item mb-2"><a href="inventario.html" class="nav-link text-white"><i class="bi bi-box-seam me-2"></i><span>Inventario</span></a></li>
-                <li class="nav-item mb-2"><a href="compras.html" class="nav-link text-white"><i class="bi bi-cart-plus me-2"></i><span>Compras</span></a></li>
-                <li class="nav-item mb-2"><a href="facturas.html" class="nav-link text-white"><i class="bi bi-receipt-cutoff me-2"></i><span>Facturas</span></a></li>
-                <li class="nav-item mb-2"><a href="finanzas.html" class="nav-link text-white"><i class="bi bi-cash-coin me-2"></i><span>Finanzas</span></a></li>
-                <li class="nav-item mb-2"><a href="reportes.html" class="nav-link text-white"><i class="bi bi-bar-chart-fill me-2"></i><span>Reportes</span></a></li>
+    <!-- Sidebar -->
+    <div class="sidebar position-fixed h-100 d-flex flex-column" style="width: 250px; z-index: 1000;">
+        <div class="logo-container">
+            <div class="d-flex align-items-center">
+                <img src="logo/logo.jpg" alt="Logo" class="logo-img me-3">
+                <div>
+                    <h5 class="text-white mb-0 fw-bold">Jeziel</h5>
+                    <small class="text-white-50">Sublimaciones</small>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="flex-grow-1 p-3">
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="index.html">
+                        <i class="fas fa-home me-3"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="clientes.html">
+                        <i class="fas fa-users me-3"></i>Clientes
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link active" href="ventas.html">
+                        <i class="fas fa-shopping-cart me-3"></i>Ventas
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="inventario.html">
+                        <i class="fas fa-boxes me-3"></i>Inventario
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="compras.html">
+                        <i class="fas fa-shopping-bag me-3"></i>Compras
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="facturas.html">
+                        <i class="fas fa-file-invoice me-3"></i>Facturas
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="finanzas.html">
+                        <i class="fas fa-chart-line me-3"></i>Finanzas
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="reportes.html">
+                        <i class="fas fa-chart-bar me-3"></i>Reportes
+                    </a>
+                </li>
             </ul>
-            <hr style="border-color: #2d3650;">
-            <div class="text-white-50 small text-center mt-auto">&copy; 2025 Sublimaciones Jeziel</div>
         </nav>
-        <!-- Contenido principal -->
-        <div class="flex-grow-1 bg-light" style="min-height:100vh;">
-            <div class="container py-4">
+        
+        <div class="p-3 border-top border-light">
+            <div class="text-center text-white-50 small">
+                <i class="fas fa-crown text-warning me-1"></i>
+                © 2025 Jeziel ERP
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div style="margin-left: 250px; min-height: 100vh;">
+        <div class="hero-section">
+            <h1 class="erp-title">Gestión de Ventas</h1>
+            <p class="hero-subtitle">Registro y control profesional de ventas de productos</p>
+        </div>
+        <div class="container-fluid py-4">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="card shadow-sm mb-4">
@@ -320,17 +113,24 @@
                             <div class="row g-2 align-items-end">
                                 <div class="col-md-3">
                                     <label class="form-label">Fecha</label>
-                                    <input type="date" class="form-control" id="fechaVenta" required>
+                                    <input type="date" class="form-control" id="fechaVenta" required readonly>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label">Código Cliente</label>
-                                    <input type="text" class="form-control" id="codigoClienteVenta" required>
+                                    <label class="form-label">Seleccionar Cliente</label>
+                                    <select class="form-select" id="codigoClienteVenta" required>
+                                        <option value="">-- Seleccionar Cliente --</option>
+                                    </select>
                                     <div class="form-text"><span id="nombreClienteVenta" class="fw-semibold"></span></div>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label">Código Producto</label>
-                                    <input type="text" class="form-control" id="codigoProductoVenta" required>
-                                    <div class="form-text"><span id="nombreProductoVenta" class="fw-semibold"></span></div>
+                                    <label class="form-label">Seleccionar Producto</label>
+                                    <select class="form-select" id="codigoProductoVenta" required>
+                                        <option value="">-- Seleccionar Producto --</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <span id="nombreProductoVenta" class="fw-semibold"></span>
+                                        <span id="precioProductoVenta" class="text-success ms-2"></span>
+                                    </div>
                                 </div>
                                 <div class="col-md-1">
                                     <label class="form-label">Cantidad</label>
@@ -403,6 +203,49 @@
         return last;
     }
     let ventas = cargarVentas();
+
+    // Función para cargar fecha automática
+    function setFechaHoy() {
+        const hoy = new Date();
+        const fecha = hoy.toISOString().split('T')[0];
+        document.getElementById('fechaVenta').value = fecha;
+    }
+
+    // Función para cargar lista de clientes
+    function cargarListaClientes() {
+        const selectClientes = document.getElementById('codigoClienteVenta');
+        selectClientes.innerHTML = '<option value="">-- Seleccionar Cliente --</option>';
+        
+        try {
+            const clientes = JSON.parse(localStorage.getItem('clientesJeziel')) || [];
+            clientes.forEach(cliente => {
+                const option = document.createElement('option');
+                option.value = cliente.codigo;
+                option.textContent = `${cliente.codigo} - ${cliente.nombre}`;
+                selectClientes.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error al cargar clientes:', error);
+        }
+    }
+
+    // Función para cargar lista de productos
+    function cargarListaProductos() {
+        const selectProductos = document.getElementById('codigoProductoVenta');
+        selectProductos.innerHTML = '<option value="">-- Seleccionar Producto --</option>';
+        
+        try {
+            const inventario = JSON.parse(localStorage.getItem('inventarioJeziel')) || [];
+            inventario.forEach(producto => {
+                const option = document.createElement('option');
+                option.value = producto.codigo;
+                option.textContent = `${producto.codigo} - ${producto.nombre} ($${parseFloat(producto.precioVenta || 0).toFixed(2)})`;
+                selectProductos.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error al cargar productos:', error);
+        }
+    }
 
     function renderVentas() {
         const tbody = document.querySelector('#tablaVentas tbody');
@@ -520,20 +363,22 @@
         doc.save(`Tique_${venta.numeroFactura || ''}_${venta.fecha}.pdf`);
     }
 
-    // Buscar nombre de cliente por código
-    document.getElementById('codigoClienteVenta').addEventListener('input', function() {
-        const codigo = this.value.trim();
+    // Event listener para selección de cliente
+    document.getElementById('codigoClienteVenta').addEventListener('change', function() {
+        const codigo = this.value;
         let nombre = '';
-        try {
-            const clientes = JSON.parse(localStorage.getItem('clientesJeziel')) || [];
-            const cliente = clientes.find(c => c.codigo === codigo);
-            if(cliente) nombre = cliente.nombre;
-        } catch {}
+        if (codigo) {
+            try {
+                const clientes = JSON.parse(localStorage.getItem('clientesJeziel')) || [];
+                const cliente = clientes.find(c => c.codigo === codigo);
+                if(cliente) nombre = cliente.nombre;
+            } catch {}
+        }
         document.getElementById('nombreClienteVenta').textContent = nombre;
     });
 
-    // Buscar nombre de producto por código
-    document.getElementById('codigoProductoVenta').addEventListener('input', function() {
+    // Event listener para selección de producto
+    document.getElementById('codigoProductoVenta').addEventListener('change', function() {
         actualizarTotalVenta();
     });
 
@@ -542,44 +387,56 @@
     });
 
     function actualizarTotalVenta() {
-        const codigo = document.getElementById('codigoProductoVenta').value.trim();
+        const codigo = document.getElementById('codigoProductoVenta').value;
         let nombre = '';
         let precio = 0;
-        try {
-            const inventario = JSON.parse(localStorage.getItem('inventarioJeziel')) || [];
-            const prod = inventario.find(p => p.codigo === codigo);
-            if(prod) {
-                nombre = prod.nombre;
-                precio = parseFloat(prod.precioVenta) || 0;
-            }
-        } catch {}
+        
+        if (codigo) {
+            try {
+                const inventario = JSON.parse(localStorage.getItem('inventarioJeziel')) || [];
+                const prod = inventario.find(p => p.codigo === codigo);
+                if(prod) {
+                    nombre = prod.nombre;
+                    precio = parseFloat(prod.precioVenta) || 0;
+                }
+            } catch {}
+        }
+        
         document.getElementById('nombreProductoVenta').textContent = nombre;
+        document.getElementById('precioProductoVenta').textContent = precio > 0 ? `Precio: $${precio.toFixed(2)}` : '';
+        
         const cantidad = parseInt(document.getElementById('cantidadVenta').value) || 0;
-        document.getElementById('totalVenta').value = (precio * cantidad).toFixed(2);
+        const total = precio * cantidad;
+        document.getElementById('totalVenta').value = total.toFixed(2);
     }
     // Registrar venta con número de factura automático
     function agregarVenta() {
         const fecha = document.getElementById('fechaVenta').value;
-        const codigoCliente = document.getElementById('codigoClienteVenta').value.trim();
-        const codigoProducto = document.getElementById('codigoProductoVenta').value.trim();
+        const codigoCliente = document.getElementById('codigoClienteVenta').value;
+        const codigoProducto = document.getElementById('codigoProductoVenta').value;
         const cantidad = parseInt(document.getElementById('cantidadVenta').value) || 0;
         const total = parseFloat(document.getElementById('totalVenta').value) || 0;
+        
         let nombreCliente = '';
         let nombreProducto = '';
+        
         try {
             const clientes = JSON.parse(localStorage.getItem('clientesJeziel')) || [];
             const cliente = clientes.find(c => c.codigo === codigoCliente);
             if(cliente) nombreCliente = cliente.nombre;
         } catch {}
+        
         try {
             const inventario = JSON.parse(localStorage.getItem('inventarioJeziel')) || [];
             const prod = inventario.find(p => p.codigo === codigoProducto);
             if(prod) nombreProducto = prod.nombre;
         } catch {}
+        
         if(!fecha || !codigoCliente || !codigoProducto || cantidad <= 0 || total <= 0) {
             alert('Completa todos los campos correctamente.');
             return;
         }
+        
         const numeroFactura = getNextNumeroFactura();
         ventas.push({
             numeroFactura,
@@ -591,17 +448,35 @@
             cantidad,
             total
         });
+        
         guardarVentas();
         renderVentas();
-        document.getElementById('formVenta').reset();
+        
+        // Limpiar formulario pero mantener fecha automática
+        document.getElementById('codigoClienteVenta').value = '';
+        document.getElementById('codigoProductoVenta').value = '';
+        document.getElementById('cantidadVenta').value = '';
+        document.getElementById('totalVenta').value = '';
         document.getElementById('nombreClienteVenta').textContent = '';
         document.getElementById('nombreProductoVenta').textContent = '';
-        document.getElementById('totalVenta').value = '';
+        document.getElementById('precioProductoVenta').textContent = '';
+        
+        alert('Venta registrada exitosamente!');
     }
-    renderVentas();
+    
+    // Inicializar la página
+    function inicializarVentas() {
+        setFechaHoy();
+        cargarListaClientes();
+        cargarListaProductos();
+        renderVentas();
+    }
+    
+    // Ejecutar inicialización cuando se carga la página
+    inicializarVentas();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        </div>
-    </div>
+        </div> <!-- Cierre container-fluid -->
+    </div> <!-- Cierre main content -->
 </body>
 </html>
