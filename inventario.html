@@ -31,6 +31,81 @@
             background: linear-gradient(135deg, #27ae60, #2ecc71);
             color: white;
         }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Estilos mejorados para campos de formulario */
+        .form-control, .form-select {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15), 
+                        0 4px 15px rgba(102, 126, 234, 0.1);
+            color: #1a202c;
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #718096;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        /* Alternativa: Campos con fondo oscuro y texto claro */
+        .form-control.dark-theme, .form-select.dark-theme {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            border: 2px solid #4a5568;
+            color: #e2e8f0;
+        }
+
+        .form-control.dark-theme:focus, .form-select.dark-theme:focus {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            border-color: #81e6d9;
+            box-shadow: 0 0 0 0.2rem rgba(129, 230, 217, 0.15);
+            color: #f7fafc;
+        }
+
+        .form-control.dark-theme::placeholder {
+            color: #a0aec0;
+        }
+
+        /* Alternativa: Campos con colores vibrantes */
+        .form-control.vibrant-theme, .form-select.vibrant-theme {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .form-control.vibrant-theme:focus, .form-select.vibrant-theme:focus {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            border-color: #f093fb;
+            box-shadow: 0 0 0 0.2rem rgba(240, 147, 251, 0.25);
+        }
+
+        .form-control.vibrant-theme::placeholder {
+            color: #e2e8f0;
+        }
     </style>
 </head>
 <body>
@@ -108,6 +183,35 @@
         
         <!-- Contenido principal -->
         <div class="container-fluid py-4">
+            <!-- Selector de tema para campos -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center">
+                                <span class="me-3 fw-500">Tema de campos:</span>
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check" name="themeSelector" id="theme-light" value="light" checked>
+                                    <label class="btn btn-outline-primary btn-sm" for="theme-light">
+                                        <i class="fas fa-sun me-1"></i>Claro
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="themeSelector" id="theme-dark" value="dark">
+                                    <label class="btn btn-outline-secondary btn-sm" for="theme-dark">
+                                        <i class="fas fa-moon me-1"></i>Oscuro
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="themeSelector" id="theme-vibrant" value="vibrant">
+                                    <label class="btn btn-outline-success btn-sm" for="theme-vibrant">
+                                        <i class="fas fa-palette me-1"></i>Vibrante
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Estadísticas del inventario -->
             <div class="row mb-4">
                 <div class="col-lg-3 col-md-6 mb-3">
@@ -176,10 +280,12 @@
                             <select class="form-select" id="categoriaProducto" required>
                                 <option value="">Seleccionar categoría</option>
                                 <option value="Camisetas">Camisetas</option>
-                                <option value="Tazas">Tazas</option>
+                                <option value="Mugs">Mugs</option>
                                 <option value="Llaveros">Llaveros</option>
                                 <option value="Gorras">Gorras</option>
-                                <option value="Accesorios">Accesorios</option>
+                                <option value="Stickers">Stickers</option>
+                                <option value="Sublimación">Sublimación</option>
+                                <option value="Insumos">Insumos</option>
                                 <option value="Otros">Otros</option>
                             </select>
                         </div>
@@ -231,10 +337,12 @@
                             <select class="form-select" id="filtroCategoria">
                                 <option value="">Todas las categorías</option>
                                 <option value="Camisetas">Camisetas</option>
-                                <option value="Tazas">Tazas</option>
+                                <option value="Mugs">Mugs</option>
                                 <option value="Llaveros">Llaveros</option>
                                 <option value="Gorras">Gorras</option>
-                                <option value="Accesorios">Accesorios</option>
+                                <option value="Stickers">Stickers</option>
+                                <option value="Sublimación">Sublimación</option>
+                                <option value="Insumos">Insumos</option>
                                 <option value="Otros">Otros</option>
                             </select>
                         </div>
@@ -267,11 +375,8 @@
                             <button class="btn btn-outline-success" onclick="exportarInventario()">
                                 <i class="fas fa-download me-2"></i>Exportar
                             </button>
-                            <button class="btn btn-outline-primary" onclick="mostrarOpcionesMigracion()">
-                                <i class="fas fa-cloud-upload-alt me-2"></i>Firebase
-                            </button>
-                            <button class="btn btn-outline-info" onclick="mostrarEstadisticasAvanzadas()">
-                                <i class="fas fa-chart-pie me-2"></i>Estadísticas
+                            <button class="btn btn-outline-info" onclick="mostrarEstadoConexion()">
+                                <i class="fas fa-cloud me-2"></i>Estado
                             </button>
                         </div>
                     </div>
@@ -301,76 +406,60 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Firebase Configuration -->
-    <script type="module" src="assets/js/firebase-config.js"></script>
-    <script type="module" src="assets/js/inventario-service.js"></script>
-    <script type="module" src="assets/js/erp-main.js"></script>
-    
-    <script type="module">
+    <script>
         // Variables globales
         let inventario = [];
-        let editIndex = null;
         let currentProductId = null;
-        let unsubscribeListener = null;
 
-        // Indicador de carga
-        function mostrarCargando(mostrar = true) {
-            const loader = document.getElementById('loadingIndicator') || createLoadingIndicator();
-            loader.style.display = mostrar ? 'flex' : 'none';
+        // Cargar datos desde localStorage
+        function cargarInventario() {
+            const data = localStorage.getItem('inventarioJeziel');
+            if (data) {
+                try {
+                    inventario = JSON.parse(data);
+                } catch {
+                    inventario = [];
+                }
+            }
+            renderInventario();
         }
 
-        function createLoadingIndicator() {
-            const loader = document.createElement('div');
-            loader.id = 'loadingIndicator';
-            loader.style.cssText = `
+        // Guardar datos en localStorage
+        function guardarInventario() {
+            localStorage.setItem('inventarioJeziel', JSON.stringify(inventario));
+        }
+
+        // Mostrar notificaciones
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${tipo === 'error' ? 'danger' : tipo === 'success' ? 'success' : 'info'} notification-custom`;
+            notification.style.cssText = `
                 position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(26, 29, 41, 0.8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                top: 20px;
+                right: 20px;
                 z-index: 9999;
-                backdrop-filter: blur(5px);
+                max-width: 350px;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                animation: slideInRight 0.3s ease-out;
             `;
-            loader.innerHTML = `
-                <div class="text-center text-white">
-                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
-                    <h5>Cargando inventario...</h5>
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${tipo === 'error' ? 'exclamation-triangle' : tipo === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                    <span>${mensaje}</span>
+                    <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
                 </div>
             `;
-            document.body.appendChild(loader);
-            return loader;
-        }
-
-        // Cargar inventario desde Firebase
-        async function cargarInventario() {
-            try {
-                mostrarCargando(true);
-                inventario = await inventarioService.obtenerTodos();
-                renderInventario();
-                
-                // Configurar listener para cambios en tiempo real
-                if (unsubscribeListener) {
-                    unsubscribeListener();
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => notification.remove(), 300);
                 }
-                unsubscribeListener = inventarioService.escucharCambios((productos) => {
-                    inventario = productos;
-                    renderInventario();
-                });
-                
-            } catch (error) {
-                console.error('Error al cargar inventario:', error);
-                inventarioService.mostrarNotificacion('Error al cargar inventario. Intentando con datos locales...', 'error');
-                // Fallback a localStorage
-                inventario = inventarioService.obtenerDeLocalStorage();
-                renderInventario();
-            } finally {
-                mostrarCargando(false);
-            }
+            }, 5000);
         }
 
         // Renderizar tabla de inventario
@@ -395,18 +484,18 @@
             }
             
             inventario.forEach((item, idx) => {
-                const stockStatus = getStockStatus(item.stock, item.stockMinimo || 5);
+                const stockStatus = getStockStatus(item.stock || 0, item.stockMinimo || 5);
                 const margen = item.precioVenta && item.precioCompra ? 
                     ((item.precioVenta - item.precioCompra) / item.precioCompra * 100).toFixed(1) : '0';
                 
                 tbody.innerHTML += `
-                    <tr data-product-id="${item.id}">
+                    <tr>
                         <td><span class="badge bg-primary">${item.codigo || 'N/A'}</span></td>
                         <td>
-                            <strong>${item.nombre}</strong>
+                            <strong>${item.nombre || 'Sin nombre'}</strong>
                             ${item.descripcion ? `<br><small class="text-muted">${item.descripcion}</small>` : ''}
                         </td>
-                        <td><span class="badge bg-secondary">${item.categoria}</span></td>
+                        <td><span class="badge bg-secondary">${item.categoria || 'Sin categoría'}</span></td>
                         <td>$${(item.precioCompra || 0).toFixed(2)}</td>
                         <td>
                             $${(item.precioVenta || 0).toFixed(2)}
@@ -416,13 +505,13 @@
                         <td>${stockStatus.badge}</td>
                         <td>
                             <div class="btn-group" role="group">
-                                <button class="btn btn-sm btn-outline-primary" onclick="editarProducto('${item.id}')" title="Editar">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editarProducto(${idx})" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-success" onclick="ajustarStock('${item.id}')" title="Ajustar Stock">
+                                <button class="btn btn-sm btn-outline-success" onclick="ajustarStock(${idx})" title="Ajustar Stock">
                                     <i class="fas fa-plus-minus"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto('${item.id}')" title="Eliminar">
+                                <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto(${idx})" title="Eliminar">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -470,23 +559,18 @@
             return 'PRD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 5).toUpperCase();
         }
 
-        // Operaciones CRUD con Firebase
-        window.eliminarProducto = async function(productId) {
+        // Operaciones CRUD
+        function eliminarProducto(idx) {
             if (!confirm('¿Está seguro de eliminar este producto?')) return;
             
-            try {
-                mostrarCargando(true);
-                await inventarioService.eliminar(productId);
-                // El listener se encargará de actualizar la vista
-            } catch (error) {
-                console.error('Error al eliminar:', error);
-            } finally {
-                mostrarCargando(false);
-            }
-        };
+            inventario.splice(idx, 1);
+            guardarInventario();
+            renderInventario();
+            mostrarNotificacion('Producto eliminado exitosamente', 'success');
+        }
 
-        window.editarProducto = function(productId) {
-            const producto = inventario.find(p => p.id === productId);
+        function editarProducto(idx) {
+            const producto = inventario[idx];
             if (!producto) return;
 
             document.getElementById('codigoProducto').value = producto.codigo || '';
@@ -498,31 +582,26 @@
             document.getElementById('stockMinimo').value = producto.stockMinimo || '';
             document.getElementById('descripcionProducto').value = producto.descripcion || '';
             
-            currentProductId = productId;
+            currentProductId = idx;
             document.querySelector('#formAgregarProducto button[type="submit"]').innerHTML = '<i class="fas fa-save me-2"></i>Actualizar Producto';
             
             // Scroll al formulario
             document.getElementById('formAgregarProducto').scrollIntoView({ behavior: 'smooth' });
-        };
+        }
 
-        window.ajustarStock = async function(productId) {
-            const producto = inventario.find(p => p.id === productId);
+        function ajustarStock(idx) {
+            const producto = inventario[idx];
             if (!producto) return;
 
             const nuevoStock = prompt(`Stock actual: ${producto.stock || 0}\nIngrese el nuevo stock:`, producto.stock || 0);
             
             if (nuevoStock !== null && !isNaN(nuevoStock) && parseInt(nuevoStock) >= 0) {
-                try {
-                    mostrarCargando(true);
-                    const razon = prompt('Motivo del ajuste (opcional):') || 'Ajuste manual';
-                    await inventarioService.actualizarStock(productId, parseInt(nuevoStock), razon);
-                } catch (error) {
-                    console.error('Error al ajustar stock:', error);
-                } finally {
-                    mostrarCargando(false);
-                }
+                inventario[idx].stock = parseInt(nuevoStock);
+                guardarInventario();
+                renderInventario();
+                mostrarNotificacion('Stock actualizado exitosamente', 'success');
             }
-        };
+        }
 
         function limpiarFormulario() {
             document.getElementById('formAgregarProducto').reset();
@@ -539,84 +618,37 @@
             filtrarProductos();
         }
 
-        async function filtrarProductos() {
+        function filtrarProductos() {
             const busqueda = document.getElementById('buscadorProducto').value.toLowerCase();
             const categoria = document.getElementById('filtroCategoria').value;
             const stock = document.getElementById('filtroStock').value;
+            const rows = document.querySelectorAll('#tablaInventario tbody tr');
             
-            let productosFiltrados = inventario;
-
-            // Filtro por búsqueda de texto
-            if (busqueda) {
-                productosFiltrados = await inventarioService.buscar(busqueda);
-            }
-
-            // Filtro por categoría
-            if (categoria) {
-                productosFiltrados = await inventarioService.filtrarPorCategoria(categoria);
-            }
-
-            // Filtro por stock
-            if (stock) {
-                if (stock === 'bajo') {
-                    productosFiltrados = await inventarioService.obtenerStockBajo();
-                }
-                // Otros filtros de stock se pueden agregar aquí
-            }
-
-            // Renderizar productos filtrados
-            const tbody = document.querySelector('#tablaInventario tbody');
-            tbody.innerHTML = '';
-            
-            productosFiltrados.forEach((item) => {
-                const stockStatus = getStockStatus(item.stock, item.stockMinimo || 5);
-                const margen = item.precioVenta && item.precioCompra ? 
-                    ((item.precioVenta - item.precioCompra) / item.precioCompra * 100).toFixed(1) : '0';
+            rows.forEach(row => {
+                if (row.children.length < 8) return; // Skip empty state row
                 
-                tbody.innerHTML += `
-                    <tr data-product-id="${item.id}">
-                        <td><span class="badge bg-primary">${item.codigo || 'N/A'}</span></td>
-                        <td>
-                            <strong>${item.nombre}</strong>
-                            ${item.descripcion ? `<br><small class="text-muted">${item.descripcion}</small>` : ''}
-                        </td>
-                        <td><span class="badge bg-secondary">${item.categoria}</span></td>
-                        <td>$${(item.precioCompra || 0).toFixed(2)}</td>
-                        <td>
-                            $${(item.precioVenta || 0).toFixed(2)}
-                            <small class="text-success d-block">+${margen}%</small>
-                        </td>
-                        <td><strong>${item.stock || 0}</strong> uds.</td>
-                        <td>${stockStatus.badge}</td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-sm btn-outline-primary" onclick="editarProducto('${item.id}')" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-success" onclick="ajustarStock('${item.id}')" title="Ajustar Stock">
-                                    <i class="fas fa-plus-minus"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto('${item.id}')" title="Eliminar">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
+                const texto = row.textContent.toLowerCase();
+                const categoriaRow = row.children[2].textContent;
+                const stockValue = parseInt(row.children[5].textContent) || 0;
+                const stockStatus = getStockStatus(stockValue, 5).type;
+                
+                const cumpleBusqueda = texto.includes(busqueda);
+                const cumpleCategoria = !categoria || categoriaRow.includes(categoria);
+                const cumpleStock = !stock || stockStatus === stock;
+                
+                row.style.display = (cumpleBusqueda && cumpleCategoria && cumpleStock) ? '' : 'none';
             });
         }
 
         // Exportar inventario
-        async function exportarInventario() {
+        function exportarInventario() {
             try {
-                const productos = await inventarioService.obtenerTodos();
                 const csv = [
-                    ['Código', 'Producto', 'Categoría', 'Precio Compra', 'Precio Venta', 'Stock', 'Stock Mínimo', 'Descripción', 'Fecha Creación'],
-                    ...productos.map(p => [
+                    ['Código', 'Producto', 'Categoría', 'Precio Compra', 'Precio Venta', 'Stock', 'Stock Mínimo', 'Descripción'],
+                    ...inventario.map(p => [
                         p.codigo || '', p.nombre || '', p.categoria || '', 
                         p.precioCompra || 0, p.precioVenta || 0, 
-                        p.stock || 0, p.stockMinimo || 0, p.descripcion || '',
-                        p.fechaCreacion || ''
+                        p.stock || 0, p.stockMinimo || 0, p.descripcion || ''
                     ])
                 ].map(row => row.join(',')).join('\n');
                 
@@ -628,335 +660,130 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
                 
-                inventarioService.mostrarNotificacion('Inventario exportado exitosamente', 'success');
+                mostrarNotificacion('Inventario exportado exitosamente', 'success');
             } catch (error) {
                 console.error('Error al exportar:', error);
-                inventarioService.mostrarNotificacion('Error al exportar inventario', 'error');
+                mostrarNotificacion('Error al exportar inventario', 'error');
             }
         }
 
-        // Event Listeners
-        document.getElementById('formAgregarProducto').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const codigo = document.getElementById('codigoProducto').value.trim();
-            const nombre = document.getElementById('nombreProducto').value.trim();
-            const categoria = document.getElementById('categoriaProducto').value;
-            const precioCompra = parseFloat(document.getElementById('precioCompra').value) || 0;
-            const precioVenta = parseFloat(document.getElementById('precioVenta').value) || 0;
-            const stock = parseInt(document.getElementById('stockProducto').value) || 0;
-            const stockMinimo = parseInt(document.getElementById('stockMinimo').value) || 5;
-            const descripcion = document.getElementById('descripcionProducto').value.trim();
-            
-            if (!nombre || !categoria) {
-                inventarioService.mostrarNotificacion('Por favor complete los campos requeridos', 'error');
-                return;
-            }
-            
-            const producto = {
-                codigo: codigo || generarCodigoProducto(),
-                nombre, 
-                categoria, 
-                precioCompra, 
-                precioVenta, 
-                stock, 
-                stockMinimo, 
-                descripcion
-            };
-            
-            try {
-                mostrarCargando(true);
-                
-                if (currentProductId) {
-                    // Actualizar producto existente
-                    await inventarioService.actualizar(currentProductId, producto);
-                } else {
-                    // Agregar nuevo producto
-                    await inventarioService.agregar(producto);
-                }
-                
-                limpiarFormulario();
-                
-            } catch (error) {
-                console.error('Error al guardar producto:', error);
-            } finally {
-                mostrarCargando(false);
-            }
-        });
-
-        // Filtros en tiempo real
-        document.getElementById('buscadorProducto').addEventListener('input', filtrarProductos);
-        document.getElementById('filtroCategoria').addEventListener('change', filtrarProductos);
-        document.getElementById('filtroStock').addEventListener('change', filtrarProductos);
-
-        // Exportar función globalmente
-        window.exportarInventario = exportarInventario;
-        window.limpiarFiltros = limpiarFiltros;
-
-        // Funciones adicionales para Firebase
-        window.mostrarOpcionesMigracion = function() {
-            const modal = document.createElement('div');
-            modal.className = 'modal fade';
-            modal.innerHTML = `
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title">
-                                <i class="fas fa-cloud me-2"></i>Opciones de Firebase
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <button class="btn btn-outline-primary w-100" onclick="migrarDatosManual()">
-                                        <i class="fas fa-cloud-upload-alt me-2"></i>
-                                        Migrar datos locales a Firebase
-                                    </button>
-                                </div>
-                                <div class="col-12">
-                                    <button class="btn btn-outline-success w-100" onclick="crearRespaldoInventario()">
-                                        <i class="fas fa-download me-2"></i>
-                                        Descargar respaldo desde Firebase
-                                    </button>
-                                </div>
-                                <div class="col-12">
-                                    <button class="btn btn-outline-info w-100" onclick="mostrarEstadoConexion()">
-                                        <i class="fas fa-wifi me-2"></i>
-                                        Verificar estado de conexión
-                                    </button>
-                                </div>
-                                <div class="col-12">
-                                    <hr>
-                                    <div class="text-center">
-                                        <small class="text-muted">
-                                            <i class="fas fa-info-circle me-1"></i>
-                                            Estado: <span id="estadoFirebase">Verificando...</span>
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            const bootstrapModal = new bootstrap.Modal(modal);
-            bootstrapModal.show();
-            
-            // Verificar estado
-            setTimeout(() => {
-                const estadoSpan = document.getElementById('estadoFirebase');
-                if (estadoSpan) {
-                    if (window.firebaseManager && inventarioService) {
-                        estadoSpan.innerHTML = '<span class="text-success">✓ Conectado</span>';
-                    } else {
-                        estadoSpan.innerHTML = '<span class="text-danger">✗ Desconectado</span>';
-                    }
-                }
-            }, 500);
-            
-            modal.addEventListener('hidden.bs.modal', () => {
-                modal.remove();
-            });
-        };
-
-        window.migrarDatosManual = async function() {
-            try {
-                if (!inventarioService) {
-                    throw new Error('Servicio de inventario no disponible');
-                }
-                
-                mostrarCargando(true);
-                await inventarioService.migrarDatos();
-                await cargarInventario(); // Recargar después de migración
-                
-                bootstrap.Modal.getInstance(document.querySelector('.modal')).hide();
-                inventarioService.mostrarNotificacion('Migración completada exitosamente', 'success');
-            } catch (error) {
-                console.error('Error en migración manual:', error);
-                inventarioService.mostrarNotificacion('Error en la migración: ' + error.message, 'error');
-            } finally {
-                mostrarCargando(false);
-            }
-        };
-
-        window.crearRespaldoInventario = async function() {
-            try {
-                if (!inventarioService) {
-                    throw new Error('Servicio de inventario no disponible');
-                }
-                
-                mostrarCargando(true);
-                const productos = await inventarioService.obtenerTodos();
-                
-                const respaldo = {
-                    fecha: new Date().toISOString(),
-                    totalProductos: productos.length,
-                    productos: productos
-                };
-                
-                const blob = new Blob([JSON.stringify(respaldo, null, 2)], { type: 'application/json' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `inventario_firebase_${new Date().toISOString().split('T')[0]}.json`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-                
-                bootstrap.Modal.getInstance(document.querySelector('.modal')).hide();
-                inventarioService.mostrarNotificacion('Respaldo descargado exitosamente', 'success');
-            } catch (error) {
-                console.error('Error al crear respaldo:', error);
-                inventarioService.mostrarNotificacion('Error al crear respaldo: ' + error.message, 'error');
-            } finally {
-                mostrarCargando(false);
-            }
-        };
-
-        window.mostrarEstadoConexion = function() {
+        // Mostrar estado de conexión
+        function mostrarEstadoConexion() {
             const estado = {
-                firebase: window.firebaseManager ? 'Conectado' : 'Desconectado',
-                internet: navigator.onLine ? 'Conectado' : 'Sin conexión',
-                servicio: inventarioService ? 'Disponible' : 'No disponible',
-                datos: inventario.length + ' productos cargados'
+                localStorage: inventario.length + ' productos guardados',
+                firebase: window.firebaseManager ? 'Disponible' : 'No disponible',
+                internet: navigator.onLine ? 'Conectado' : 'Sin conexión'
             };
             
-            alert(`Estado de Conexión:
+            alert(`Estado del Sistema:
             
+💾 Datos locales: ${estado.localStorage}
 🔥 Firebase: ${estado.firebase}
-🌐 Internet: ${estado.internet}  
-📦 Servicio: ${estado.servicio}
-📊 Datos: ${estado.datos}`);
-        };
+🌐 Internet: ${estado.internet}
 
-        window.mostrarEstadisticasAvanzadas = async function() {
-            try {
-                if (!inventarioService) {
-                    throw new Error('Servicio no disponible');
+${window.firebaseManager ? '✅ El sistema puede sincronizar con Firebase' : '⚠️ Trabajando solo con datos locales'}`);
+        }
+
+        // Función para cambiar el tema de los campos
+        function cambiarTemasCampos(tema) {
+            const campos = document.querySelectorAll('.form-control, .form-select');
+            
+            campos.forEach(campo => {
+                // Remover clases de tema anteriores
+                campo.classList.remove('dark-theme', 'vibrant-theme');
+                
+                // Aplicar nuevo tema
+                if (tema === 'dark') {
+                    campo.classList.add('dark-theme');
+                } else if (tema === 'vibrant') {
+                    campo.classList.add('vibrant-theme');
                 }
-                
-                mostrarCargando(true);
-                const stats = await inventarioService.obtenerEstadisticas();
-                
-                const modal = document.createElement('div');
-                modal.className = 'modal fade';
-                modal.innerHTML = `
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header bg-info text-white">
-                                <h5 class="modal-title">
-                                    <i class="fas fa-chart-pie me-2"></i>Estadísticas Detalladas del Inventario
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row g-4">
-                                    <div class="col-md-6">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-center">
-                                                <h3 class="text-primary">${stats.totalProductos}</h3>
-                                                <p class="mb-0">Total de Productos</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-center">
-                                                <h3 class="text-success">$${stats.valorTotal.toFixed(2)}</h3>
-                                                <p class="mb-0">Valor Total del Inventario</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-center">
-                                                <h3 class="text-warning">${stats.stockBajo}</h3>
-                                                <p class="mb-0">Productos con Stock Bajo</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-center">
-                                                <h3 class="text-danger">${stats.agotados}</h3>
-                                                <p class="mb-0">Productos Agotados</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <hr class="my-4">
-                                
-                                <h6 class="text-primary mb-3">
-                                    <i class="fas fa-layer-group me-2"></i>Distribución por Categorías
-                                </h6>
-                                <div class="row">
-                                    ${Object.entries(stats.porCategoria).map(([categoria, datos]) => `
-                                        <div class="col-md-4 mb-3">
-                                            <div class="border rounded p-3">
-                                                <h6 class="mb-1">${categoria}</h6>
-                                                <small class="text-muted">
-                                                    ${datos.cantidad} productos - $${datos.valor.toFixed(2)}
-                                                </small>
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                    <i class="fas fa-times me-2"></i>Cerrar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.appendChild(modal);
-                const bootstrapModal = new bootstrap.Modal(modal);
-                bootstrapModal.show();
-                
-                modal.addEventListener('hidden.bs.modal', () => {
-                    modal.remove();
-                });
-                
-            } catch (error) {
-                console.error('Error al obtener estadísticas:', error);
-                inventarioService.mostrarNotificacion('Error al cargar estadísticas', 'error');
-            } finally {
-                mostrarCargando(false);
-            }
-        };
+            });
 
-        // Inicialización cuando se carga la página
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Generar código inicial
+            // Guardar preferencia en localStorage
+            localStorage.setItem('themePreference', tema);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar formulario
             document.getElementById('codigoProducto').value = generarCodigoProducto();
             
-            // Cargar inventario desde Firebase
-            await cargarInventario();
+            // Configurar selector de tema
+            const themeSelectors = document.querySelectorAll('input[name="themeSelector"]');
+            const savedTheme = localStorage.getItem('themePreference') || 'light';
             
-            // Verificar si hay datos para migrar
-            const datosLocales = localStorage.getItem('inventarioJeziel');
-            if (datosLocales && inventario.length === 0) {
-                if (confirm('Se encontraron datos locales. ¿Desea migrar estos datos a Firebase?')) {
-                    try {
-                        await inventarioService.migrarDatos();
-                        await cargarInventario(); // Recargar después de la migración
-                    } catch (error) {
-                        console.error('Error en migración:', error);
+            // Aplicar tema guardado
+            document.getElementById(`theme-${savedTheme}`).checked = true;
+            cambiarTemasCampos(savedTheme);
+            
+            // Event listeners para cambio de tema
+            themeSelectors.forEach(selector => {
+                selector.addEventListener('change', function() {
+                    if (this.checked) {
+                        cambiarTemasCampos(this.value);
                     }
+                });
+            });
+            
+            // Event listener del formulario
+            document.getElementById('formAgregarProducto').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const codigo = document.getElementById('codigoProducto').value.trim();
+                const nombre = document.getElementById('nombreProducto').value.trim();
+                const categoria = document.getElementById('categoriaProducto').value;
+                const precioCompra = parseFloat(document.getElementById('precioCompra').value) || 0;
+                const precioVenta = parseFloat(document.getElementById('precioVenta').value) || 0;
+                const stock = parseInt(document.getElementById('stockProducto').value) || 0;
+                const stockMinimo = parseInt(document.getElementById('stockMinimo').value) || 5;
+                const descripcion = document.getElementById('descripcionProducto').value.trim();
+                
+                if (!nombre || !categoria) {
+                    mostrarNotificacion('Por favor complete el nombre y la categoría del producto', 'error');
+                    return;
                 }
-            }
-        });
+                
+                // Verificar código único solo si es nuevo producto
+                if (currentProductId === null && inventario.some(p => p.codigo === codigo)) {
+                    mostrarNotificacion('El código de producto ya existe. Use un código diferente.', 'error');
+                    return;
+                }
+                
+                const producto = {
+                    codigo: codigo || generarCodigoProducto(),
+                    nombre, 
+                    categoria, 
+                    precioCompra, 
+                    precioVenta, 
+                    stock, 
+                    stockMinimo, 
+                    descripcion,
+                    fechaCreacion: new Date().toISOString()
+                };
+                
+                if (currentProductId !== null) {
+                    // Actualizar producto existente
+                    inventario[currentProductId] = { ...inventario[currentProductId], ...producto };
+                    mostrarNotificacion('Producto actualizado exitosamente', 'success');
+                } else {
+                    // Agregar nuevo producto
+                    inventario.push(producto);
+                    mostrarNotificacion('Producto agregado exitosamente', 'success');
+                }
+                
+                guardarInventario();
+                renderInventario();
+                limpiarFormulario();
+            });
 
-        // Limpiar listener al salir de la página
-        window.addEventListener('beforeunload', () => {
-            if (unsubscribeListener) {
-                unsubscribeListener();
-            }
+            // Filtros en tiempo real
+            document.getElementById('buscadorProducto').addEventListener('input', filtrarProductos);
+            document.getElementById('filtroCategoria').addEventListener('change', filtrarProductos);
+            document.getElementById('filtroStock').addEventListener('change', filtrarProductos);
+
+            // Cargar inventario inicial
+            cargarInventario();
         });
     </script>
 </body>
