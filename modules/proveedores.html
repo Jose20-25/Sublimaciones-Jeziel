@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proveedores - Sublimaciones Jeziel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    
+    <!-- Configuración de Firebase -->
+    <script src="../js/firebase-config.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-logo-icon img {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        .sidebar-logo-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #a0aec0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-left-color: #667eea;
+        }
+
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+        }
+
+        /* Layout */
+        .main-layout {
+            margin-left: 280px;
+            min-height: 100vh;
+            background: #f7fafc;
+        }
+
+        /* Container */
+        .container {
+            padding: 30px;
+            max-width: none;
+        }
+
+        .nav-section {
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+
+        .nav-section-title {
+            color: #718096;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        /* Main Content with Sidebar */
+        .main-layout {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-back {
+            background: #38a169;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background: #2f855a;
+            transform: translateY(-2px);
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-icon.green { background: linear-gradient(135deg, #38a169 0%, #2f855a 100%); }
+        .stat-icon.orange { background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        /* Filters */
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #4a5568;
+            text-transform: uppercase;
+        }
+
+        .form-input, .form-select {
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #f7fafc;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #2d3748;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .table th:hover {
+            background: #edf2f7;
+        }
+
+        .table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .table tr:hover {
+            background: #f7fafc;
+        }
+
+        .supplier-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .supplier-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .supplier-details h4 {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 2px;
+        }
+
+        .supplier-details p {
+            color: #718096;
+            font-size: 13px;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status.active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status.inactive {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .rating {
+            display: flex;
+            gap: 2px;
+        }
+
+        .rating .star {
+            color: #fbb13c;
+        }
+
+        .rating .star.empty {
+            color: #e2e8f0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #3182ce;
+        }
+
+        .btn-delete {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #e53e3e;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .contact-item i {
+            width: 16px;
+            color: #718096;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">
+                    <img src="../logo/logo.jpg" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-print\'></i>';">
+                </div>
+                <div class="sidebar-logo-text">Sublimaciones Jeziel</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="../index.html" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard
+            </a>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Gestión Principal</div>
+                <a href="#" class="nav-item" onclick="navigateToModule('ventas')">
+                    <i class="fas fa-shopping-cart"></i>
+                    Ventas
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('compras')">
+                    <i class="fas fa-shopping-bag"></i>
+                    Compras
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('inventario')">
+                    <i class="fas fa-boxes"></i>
+                    Inventario
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('produccion')">
+                    <i class="fas fa-industry"></i>
+                    Producción
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('clientes')">
+                    <i class="fas fa-users"></i>
+                    Clientes
+                </a>
+                <a href="#" class="nav-item active" onclick="navigateToModule('proveedores')">
+                    <i class="fas fa-truck"></i>
+                    Proveedores
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Facturación</div>
+                <a href="#" class="nav-item" onclick="navigateToModule('facturas')">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Facturas
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('contabilidad')">
+                    <i class="fas fa-calculator"></i>
+                    Contabilidad
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('finanzas')">
+                    <i class="fas fa-chart-line"></i>
+                    Finanzas
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Administración</div>
+                <a href="#" class="nav-item" onclick="navigateToModule('reportes')">
+                    <i class="fas fa-chart-bar"></i>
+                    Reportes
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('configuracion')">
+                    <i class="fas fa-cog"></i>
+                    Configuración
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Soporte</div>
+                <a href="#" class="nav-item" onclick="navigateToModule('soporte')">
+                    <i class="fas fa-life-ring"></i>
+                    Ayuda
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-layout">
+        <div class="container">
+            <!-- Header -->
+            <header class="header">
+                <h1 class="header-title">
+                    <i class="fas fa-truck"></i>
+                    Gestión de Proveedores
+                </h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="exportSuppliers()">
+                        <i class="fas fa-download"></i>
+                        Exportar
+                    </button>
+                    <button class="btn btn-primary" onclick="openAddSupplierModal()">
+                        <i class="fas fa-plus"></i>
+                        Nuevo Proveedor
+                    </button>
+                </div>
+            </header>
+                    Nuevo Proveedor
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="content">
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Total Proveedores</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">Proveedores Activos</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">4.2</div>
+                        <div class="stat-label">Calificación Promedio</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label class="filter-label">Buscar</label>
+                    <input type="text" class="form-input" id="searchInput" placeholder="Buscar proveedor...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Estado</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Todos los estados</option>
+                        <option value="active">Activo</option>
+                        <option value="inactive">Inactivo</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Ordenar por</label>
+                    <select class="form-select" id="sortFilter">
+                        <option value="name">Nombre</option>
+                        <option value="rating">Calificación</option>
+                        <option value="city">Ciudad</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Contacto</th>
+                            <th>Ubicación</th>
+                            <th>Calificación</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="suppliersTableBody">
+                        <!-- Los datos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar proveedor -->
+    <div id="supplierModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Nuevo Proveedor</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="supplierForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre del Proveedor *</label>
+                        <input type="text" class="form-input" id="supplierName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">RUC/NIT</label>
+                        <input type="text" class="form-input" id="supplierRuc">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono *</label>
+                        <input type="tel" class="form-input" id="supplierPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="supplierEmail">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sitio Web</label>
+                        <input type="url" class="form-input" id="supplierWebsite">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ciudad *</label>
+                        <input type="text" class="form-input" id="supplierCity" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="supplierStatus">
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-input" id="supplierAddress">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Notas</label>
+                        <textarea class="form-input" id="supplierNotes" rows="3" placeholder="Información adicional sobre el proveedor..."></textarea>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" form="supplierForm" id="submitBtn">Guardar Proveedor</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función de navegación
+        function navigateToModule(module) {
+            const routes = {
+                'ventas': 'ventas.html',
+                'compras': 'compras.html',
+                'inventario': 'inventario.html',
+                'produccion': 'produccion.html',
+                'clientes': 'clientes.html',
+                'proveedores': 'proveedores.html',
+                'facturas': 'facturas.html',
+                'contabilidad': 'contabilidad.html',
+                'finanzas': 'finanzas.html',
+                'reportes': 'reportes.html',
+                'configuracion': 'configuracion.html',
+                'soporte': 'soporte.html'
+            };
+            
+            if (routes[module]) {
+                window.location.href = routes[module];
+            }
+        }
+
+        // Funciones para persistencia de datos
+        async function saveDataToLocalStorage() {
+            try {
+                // Guardar en localStorage como respaldo
+                localStorage.setItem('suppliersData', JSON.stringify(suppliersData));
+                console.log('Datos de proveedores guardados en localStorage');
+                
+                // Guardar en Firebase si está disponible
+                if (window.saveToFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                    try {
+                        await window.saveToFirebase('proveedores', {
+                            suppliersData: suppliersData,
+                            lastUpdated: new Date().toISOString()
+                        });
+                        console.log('🔥 Datos de proveedores sincronizados con Firebase');
+                        showSyncNotification('✅ Proveedores sincronizados con la nube');
+                    } catch (error) {
+                        console.error('❌ Error al sincronizar proveedores con Firebase:', error);
+                        showSyncNotification('⚠️ Error en sincronización - usando datos locales');
+                    }
+                }
+            } catch (error) {
+                console.error('Error al guardar datos de proveedores:', error);
+            }
+        }
+
+        async function loadDataFromLocalStorage() {
+            try {
+                console.log('🔥 Intentando cargar datos de proveedores desde Firebase...');
+                
+                // Intentar cargar desde Firebase primero
+                if (window.loadFromFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                    try {
+                        const firebaseData = await window.loadFromFirebase('proveedores');
+                        if (firebaseData && firebaseData.suppliersData) {
+                            suppliersData = firebaseData.suppliersData;
+                            console.log('🔥 Datos de proveedores cargados desde Firebase:', suppliersData.length, 'proveedores');
+                            showSyncNotification('✅ Proveedores sincronizados desde la nube');
+                            return true;
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ No se pudieron cargar datos desde Firebase:', error);
+                    }
+                }
+                
+                // Fallback a localStorage
+                const savedSuppliersData = localStorage.getItem('suppliersData');
+                if (savedSuppliersData) {
+                    suppliersData = JSON.parse(savedSuppliersData);
+                    console.log('📁 Datos de proveedores cargados desde localStorage');
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error al cargar datos de proveedores:', error);
+            }
+            return false;
+        }
+
+        // Función para mostrar notificaciones de sincronización
+        function showSyncNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: linear-gradient(135deg, #48bb78, #38a169);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1002;
+                max-width: 280px;
+                font-size: 0.85rem;
+                animation: slideInRight 0.5s ease;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-cloud"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+            
+            if (!document.getElementById('sync-animations')) {
+                const style = document.createElement('style');
+                style.id = 'sync-animations';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOutRight {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // Función para mostrar notificaciones de sincronización
+        function showSyncNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: linear-gradient(135deg, #48bb78, #38a169);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1002;
+                max-width: 280px;
+                font-size: 0.85rem;
+                animation: slideInRight 0.5s ease;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-cloud"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+            
+            if (!document.getElementById('sync-animations')) {
+                const style = document.createElement('style');
+                style.id = 'sync-animations';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOutRight {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // Función para limpiar datos (solo para desarrollo/testing)
+        function clearAllData() {
+            if (confirm('¿Estás seguro de que quieres eliminar TODOS los datos de proveedores? Esta acción no se puede deshacer.')) {
+                localStorage.removeItem('suppliersData');
+                suppliersData = [...defaultSuppliersData];
+                saveDataToLocalStorage();
+                renderTable();
+                updateStats();
+                alert('Datos reiniciados a valores por defecto.');
+            }
+        }
+
+        // Datos de ejemplo para proveedores (solo se usan si no hay datos guardados)
+        const defaultSuppliersData = [
+            {
+                id: 1,
+                name: "Proveedor Textil S.A.",
+                ruc: "20123456789",
+                category: "Textil",
+                phone: "+51 987 654 321",
+                email: "ventas@proveedortextil.com",
+                website: "www.proveedortextil.com",
+                city: "Lima",
+                address: "Av. Industrial 123, San Martín de Porres",
+                status: "active",
+                rating: 4.5,
+                notes: "Proveedor principal de camisetas y textiles para sublimación"
+            },
+            {
+                id: 2,
+                name: "Suministros Metálicos",
+                ruc: "20987654321",
+                category: "Metales",
+                phone: "+51 945 123 789",
+                email: "contacto@metalicos.com",
+                website: "",
+                city: "Arequipa",
+                address: "Jr. Comercio 456, Cercado",
+                status: "active",
+                rating: 4.2,
+                notes: "Especialistas en tazas de aluminio y productos metálicos"
+            },
+            {
+                id: 3,
+                name: "Maderas MDF Corp",
+                ruc: "20555666777",
+                category: "Maderas",
+                phone: "+51 912 345 678",
+                email: "ventas@maderasmdf.com",
+                website: "www.maderasmdf.com",
+                city: "Cusco",
+                address: "Zona Industrial Norte Mz. A Lt. 15",
+                status: "active",
+                rating: 4.8,
+                notes: "Proveedor de marcos MDF y productos de madera para sublimación"
+            },
+            {
+                id: 4,
+                name: "Cerámicas Industriales",
+                ruc: "20444555666",
+                category: "Cerámicas",
+                phone: "+51 956 789 123",
+                email: "info@ceramicas.com",
+                website: "",
+                city: "Trujillo",
+                address: "Av. España 789, La Esperanza",
+                status: "active",
+                rating: 3.9,
+                notes: "Tazas cerámicas y productos de cerámica para personalización"
+            },
+            {
+                id: 5,
+                name: "Acrílicos Premium",
+                ruc: "20333444555",
+                category: "Acrílicos",
+                phone: "+51 923 456 789",
+                email: "pedidos@acrilicos.com",
+                website: "www.acrilicospremium.com",
+                city: "Lima",
+                address: "Av. Argentina 321, Callao",
+                status: "active",
+                rating: 4.6,
+                notes: "Llaveros acrílicos y productos transparentes"
+            },
+            {
+                id: 6,
+                name: "Neopreno Supply",
+                ruc: "20222333444",
+                category: "Otros",
+                phone: "+51 934 567 890",
+                email: "ventas@neopreno.com",
+                website: "",
+                city: "Iquitos",
+                address: "Jr. Próspero 654, Punchana",
+                status: "active",
+                rating: 4.1,
+                notes: "Mousepads de neopreno y productos especializados"
+            },
+            {
+                id: 7,
+                name: "Cristales y Vidrios",
+                ruc: "20111222333",
+                category: "Otros",
+                phone: "+51 945 678 901",
+                email: "contacto@cristales.com",
+                website: "www.cristalesyvidrios.com",
+                city: "Piura",
+                address: "Av. Grau 987, Castilla",
+                status: "inactive",
+                rating: 3.5,
+                notes: "Vasos de vidrio templado - Actualmente suspendido"
+            },
+            {
+                id: 8,
+                name: "Distribuidora Global",
+                ruc: "20999888777",
+                category: "Otros",
+                phone: "+51 967 890 123",
+                email: "info@global.com",
+                website: "",
+                city: "Huancayo",
+                address: "Jr. Real 147, El Tambo",
+                status: "inactive",
+                rating: 2.8,
+                notes: "Proveedor múltiple - En evaluación"
+            }
+        ];
+
+        // Variable global para los datos actuales
+        let suppliersData = [];
+
+        // Función de inicialización async
+        async function initializeSuppliers() {
+            console.log('🔥 Inicializando módulo de proveedores...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            if (!(await loadDataFromLocalStorage())) {
+                suppliersData = [...defaultSuppliersData];
+                await saveDataToLocalStorage();
+            }
+        }
+
+        let currentEditId = null;
+
+        // Función para renderizar la tabla
+        function renderTable(data = suppliersData) {
+            const tbody = document.getElementById('suppliersTableBody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #666;">No hay proveedores encontrados</td></tr>';
+                return;
+            }
+
+            data.forEach(supplier => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>
+                        <div class="supplier-info">
+                            <div class="supplier-avatar">
+                                ${supplier.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="supplier-details">
+                                <h4>${supplier.name}</h4>
+                                <p>RUC: ${supplier.ruc || 'No especificado'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>${supplier.phone}</span>
+                        </div>
+                        ${supplier.email ? `<div class="contact-item"><i class="fas fa-envelope"></i><span>${supplier.email}</span></div>` : ''}
+                        ${supplier.website ? `<div class="contact-item"><i class="fas fa-globe"></i><span>${supplier.website}</span></div>` : ''}
+                    </td>
+                    <td>
+                        <strong>${supplier.city}</strong>
+                        ${supplier.address ? `<br><small style="color: #718096;">${supplier.address}</small>` : ''}
+                    </td>
+                    <td>
+                        <div class="rating">
+                            ${generateStars(supplier.rating)}
+                        </div>
+                        <small style="color: #718096;">${supplier.rating}/5</small>
+                    </td>
+                    <td>
+                        <span class="status ${supplier.status}">
+                            ${supplier.status === 'active' ? 'Activo' : 'Inactivo'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-small btn-edit" onclick="editSupplier(${supplier.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-small btn-delete" onclick="deleteSupplier(${supplier.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Función para generar estrellas de calificación
+        function generateStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    stars += '<i class="fas fa-star star"></i>';
+                } else {
+                    stars += '<i class="fas fa-star star empty"></i>';
+                }
+            }
+            return stars;
+        }
+
+        // Función para filtrar la tabla
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            const filteredData = suppliersData.filter(supplier => {
+                const matchesSearch = supplier.name.toLowerCase().includes(searchTerm) ||
+                                    supplier.city.toLowerCase().includes(searchTerm) ||
+                                    (supplier.email && supplier.email.toLowerCase().includes(searchTerm));
+                const matchesStatus = !statusFilter || supplier.status === statusFilter;
+                
+                return matchesSearch && matchesStatus;
+            });
+
+            renderTable(filteredData);
+        }
+
+        // Función para ordenar la tabla
+        function sortTable() {
+            const sortBy = document.getElementById('sortFilter').value;
+            const sortedData = [...suppliersData].sort((a, b) => {
+                switch (sortBy) {
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'rating':
+                        return b.rating - a.rating;
+                    case 'city':
+                        return a.city.localeCompare(b.city);
+                    default:
+                        return 0;
+                }
+            });
+            renderTable(sortedData);
+        }
+
+        // Función para abrir modal de nuevo proveedor
+        function openAddSupplierModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'Nuevo Proveedor';
+            document.getElementById('submitBtn').textContent = 'Guardar Proveedor';
+            document.getElementById('supplierForm').reset();
+            document.getElementById('supplierModal').style.display = 'block';
+        }
+
+        // Función para editar proveedor
+        function editSupplier(id) {
+            const supplier = suppliersData.find(s => s.id === id);
+            if (!supplier) return;
+
+            currentEditId = id;
+            document.getElementById('modalTitle').textContent = 'Editar Proveedor';
+            document.getElementById('submitBtn').textContent = 'Actualizar Proveedor';
+
+            document.getElementById('supplierName').value = supplier.name;
+            document.getElementById('supplierRuc').value = supplier.ruc || '';
+            document.getElementById('supplierPhone').value = supplier.phone;
+            document.getElementById('supplierEmail').value = supplier.email || '';
+            document.getElementById('supplierWebsite').value = supplier.website || '';
+            document.getElementById('supplierCity').value = supplier.city;
+            document.getElementById('supplierAddress').value = supplier.address || '';
+            document.getElementById('supplierStatus').value = supplier.status;
+            document.getElementById('supplierNotes').value = supplier.notes || '';
+
+            document.getElementById('supplierModal').style.display = 'block';
+        }
+
+        // Función para eliminar proveedor
+        function deleteSupplier(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este proveedor?')) {
+                suppliersData = suppliersData.filter(s => s.id !== id);
+                saveDataToLocalStorage(); // Guardar cambios
+                renderTable();
+                updateStats();
+                alert('Proveedor eliminado exitosamente y guardado automáticamente.');
+            }
+        }
+
+        // Función para cerrar modal
+        function closeModal() {
+            document.getElementById('supplierModal').style.display = 'none';
+            document.getElementById('supplierForm').reset();
+            currentEditId = null;
+        }
+
+        // Función para actualizar estadísticas
+        function updateStats() {
+            const totalSuppliers = suppliersData.length;
+            const activeSuppliers = suppliersData.filter(s => s.status === 'active').length;
+            const avgRating = suppliersData.reduce((sum, s) => sum + s.rating, 0) / totalSuppliers;
+            
+            document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = totalSuppliers;
+            document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = activeSuppliers;
+            document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = avgRating.toFixed(1);
+        }
+
+        // Función para exportar proveedores
+        function exportSuppliers() {
+            const headers = ['Nombre', 'RUC', 'Categoría', 'Teléfono', 'Email', 'Sitio Web', 'Ciudad', 'Dirección', 'Estado', 'Calificación', 'Notas'];
+            const csvContent = [
+                headers.join(','),
+                ...suppliersData.map(s => [
+                    `"${s.name}"`,
+                    s.ruc || '',
+                    s.category,
+                    s.phone,
+                    s.email || '',
+                    s.website || '',
+                    s.city,
+                    `"${s.address || ''}"`,
+                    s.status === 'active' ? 'Activo' : 'Inactivo',
+                    s.rating,
+                    `"${s.notes || ''}"`
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'proveedores_sublimaciones_jeziel.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Event Listeners
+        document.getElementById('supplierForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('supplierName').value,
+                ruc: document.getElementById('supplierRuc').value,
+                phone: document.getElementById('supplierPhone').value,
+                email: document.getElementById('supplierEmail').value,
+                website: document.getElementById('supplierWebsite').value,
+                city: document.getElementById('supplierCity').value,
+                address: document.getElementById('supplierAddress').value,
+                status: document.getElementById('supplierStatus').value,
+                notes: document.getElementById('supplierNotes').value,
+                rating: 0 // Se puede agregar funcionalidad para calificar después
+            };
+
+            if (currentEditId) {
+                // Editar proveedor existente
+                const index = suppliersData.findIndex(s => s.id === currentEditId);
+                suppliersData[index] = { ...suppliersData[index], ...formData };
+            } else {
+                // Agregar nuevo proveedor
+                const newId = Math.max(...suppliersData.map(s => s.id)) + 1;
+                suppliersData.push({ id: newId, ...formData });
+            }
+
+            saveDataToLocalStorage(); // Guardar cambios
+            renderTable();
+            updateStats();
+            closeModal();
+            
+            const action = currentEditId ? 'actualizado' : 'agregado';
+            alert(`Proveedor ${action} exitosamente y guardado automáticamente.`);
+        });
+
+        // Event listeners para filtros
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
+        document.getElementById('sortFilter').addEventListener('change', sortTable);
+
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('supplierModal')) {
+                closeModal();
+            }
+        });
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeSuppliers();
+            renderTable();
+            updateStats();
+        });
+    </script>
+</body>
+</html>

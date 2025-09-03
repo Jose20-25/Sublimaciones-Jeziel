@@ -1,0 +1,1946 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compras - Sublimaciones Jeziel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS para generar archivos Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    
+    <!-- Configuración de Firebase -->
+    <script src="../js/firebase-config.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f7fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .sidebar-logo-icon img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        .sidebar-logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0aec0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-left-color: #667eea;
+        }
+
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-layout {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title i {
+            color: #667eea;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(72, 187, 120, 0.3);
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.warning {
+            border-left-color: #f6ad55;
+        }
+
+        .stat-card.success {
+            border-left-color: #48bb78;
+        }
+
+        .stat-card.info {
+            border-left-color: #4299e1;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .stat-icon.warning {
+            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+        }
+
+        .stat-icon.success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .stat-icon.info {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .stat-change.positive {
+            color: #38a169;
+        }
+
+        .stat-change.negative {
+            color: #e53e3e;
+        }
+
+        /* Main Content Card */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .card-content {
+            padding: 25px;
+        }
+
+        /* Search and Filters */
+        .search-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+
+        .filter-select {
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: #fef5e7;
+            color: #b7791f;
+        }
+
+        .status-approved {
+            background: #f0fff4;
+            color: #22543d;
+        }
+
+        .status-received {
+            background: #e6fffa;
+            color: #234e52;
+        }
+
+        .status-cancelled {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #a0aec0;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-edit {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #3182ce;
+        }
+
+        .btn-delete {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c53030;
+        }
+
+        .btn-view {
+            background: #38a169;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #2f855a;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+
+            .main-layout {
+                margin-left: 0;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .search-filters {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Animaciones */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo">
+                <div class="sidebar-logo-icon">
+                    <img src="../logo/logo.jpg" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-print\'></i>';">
+                </div>
+                <div class="sidebar-logo-text">Sublimaciones Jeziel</div>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="../index.html" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Gestión Principal</div>
+                <a href="ventas.html" class="nav-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    Ventas
+                </a>
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-shopping-bag"></i>
+                    Compras
+                </a>
+                <a href="inventario.html" class="nav-item">
+                    <i class="fas fa-boxes"></i>
+                    Inventario
+                </a>
+                <a href="clientes.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    Clientes
+                </a>
+                <a href="proveedores.html" class="nav-item">
+                    <i class="fas fa-truck"></i>
+                    Proveedores
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Facturación</div>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Facturas
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-calculator"></i>
+                    Contabilidad
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    Finanzas
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Administración</div>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    Reportes
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    Configuración
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-layout">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header-title">
+                <i class="fas fa-shopping-bag"></i>
+                Gestión de Compras
+            </h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="exportToExcel()">
+                    <i class="fas fa-download"></i>
+                    Exportar
+                </button>
+                <button class="btn btn-primary" onclick="openPurchaseModal()">
+                    <i class="fas fa-plus"></i>
+                    Nueva Compra
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="content">
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">$34,780</div>
+                    <div class="stat-label">Compras este Mes</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +6.8%
+                    </div>
+                </div>
+
+                <div class="stat-card warning">
+                    <div class="stat-header">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Pedidos Pendientes</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-down"></i> -2.3%
+                    </div>
+                </div>
+
+                <div class="stat-card success">
+                    <div class="stat-header">
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">Compras Completadas</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +18.2%
+                    </div>
+                </div>
+
+                <div class="stat-card info">
+                    <div class="stat-header">
+                        <div class="stat-icon info">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">23</div>
+                    <div class="stat-label">Proveedores Activos</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +4.1%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Lista de Compras</h2>
+                </div>
+                <div class="card-content">
+                    <!-- Search and Filters -->
+                    <div class="search-filters">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Buscar por proveedor, número de orden o producto..." id="searchInput">
+                        </div>
+                        <select class="filter-select" id="statusFilter">
+                            <option value="">Todos los Estados</option>
+                            <option value="pending">Pendiente</option>
+                            <option value="approved">Aprobado</option>
+                            <option value="received">Recibido</option>
+                            <option value="cancelled">Cancelado</option>
+                        </select>
+                        <select class="filter-select" id="supplierFilter">
+                            <option value="">Todos los Proveedores</option>
+                            <!-- Los proveedores se cargarán dinámicamente -->
+                        </select>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-container">
+                        <table class="table" id="purchasesTable">
+                            <thead>
+                                <tr>
+                                    <th>N° Orden</th>
+                                    <th>Fecha</th>
+                                    <th>Proveedor</th>
+                                    <th>Productos</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Entrega</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchasesTableBody">
+                                <!-- Los datos se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nueva Compra -->
+    <div class="modal" id="purchaseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nueva Orden de Compra</h3>
+                <button class="modal-close" onclick="closePurchaseModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="purchaseForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Proveedor *</label>
+                            <select class="form-control" id="supplier" required>
+                                <option value="">Seleccionar proveedor</option>
+                                <!-- Los proveedores se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fecha de Pedido</label>
+                            <input type="date" class="form-control" id="orderDate" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fecha de Entrega Esperada</label>
+                            <input type="date" class="form-control" id="deliveryDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Referencia/Nota</label>
+                            <input type="text" class="form-control" id="reference" placeholder="Referencia interna">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Método de Pago</label>
+                            <select class="form-control" id="paymentMethod">
+                                <option value="cash">Efectivo</option>
+                                <option value="transfer">Transferencia</option>
+                                <option value="credit">Crédito</option>
+                                <option value="check">Cheque</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Estado Inicial</label>
+                            <select class="form-control" id="initialStatus">
+                                <option value="pending">Pendiente</option>
+                                <option value="approved">Aprobado</option>
+                                <option value="received">Recibido (Actualizar Inventario)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h4 style="margin: 25px 0 15px 0; color: #2d3748;">Productos a Comprar</h4>
+                    <div id="productsContainer">
+                        <div class="product-row" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 15px; align-items: end; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label class="form-label">Producto</label>
+                                <select class="form-control product-select">
+                                    <option value="">Seleccionar producto</option>
+                                    <!-- Los productos se cargarán dinámicamente -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cantidad</label>
+                                <input type="number" class="form-control quantity-input" placeholder="0" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Precio Unitario</label>
+                                <input type="number" class="form-control price-input" placeholder="0.00" step="0.01" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Subtotal</label>
+                                <input type="text" class="form-control subtotal-input" readonly placeholder="$0.00">
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="removeProductRow(this)" style="margin-top: 25px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" onclick="addProductRow()">
+                        <i class="fas fa-plus"></i>
+                        Agregar Producto
+                    </button>
+
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong style="font-size: 1.1rem;">Total: <span id="totalAmount">$0.00</span></strong>
+                            <div>
+                                <button type="button" class="btn btn-secondary" onclick="closePurchaseModal()">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Crear Orden de Compra</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Detalles -->
+    <div class="modal" id="viewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalles de la Compra</h3>
+                <button class="modal-close" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="viewModalBody">
+                <!-- Los detalles se cargarán dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para cargar proveedores desde localStorage
+        function loadSuppliersData() {
+            try {
+                const savedSuppliersData = localStorage.getItem('suppliersData');
+                if (savedSuppliersData) {
+                    const suppliersFromStorage = JSON.parse(savedSuppliersData);
+                    return suppliersFromStorage.filter(supplier => supplier.status === 'active');
+                }
+            } catch (error) {
+                console.error('Error al cargar proveedores:', error);
+            }
+            
+            // Si no hay datos en localStorage, usar datos por defecto
+            return suppliersData.filter(supplier => supplier.status === 'active');
+        }
+
+        // Datos de proveedores (sincronizado con página de proveedores)
+        const suppliersData = [
+            {
+                id: 1,
+                name: "Proveedor Textil S.A.",
+                ruc: "20123456789",
+                category: "Textil",
+                phone: "+51 987 654 321",
+                email: "ventas@proveedortextil.com",
+                city: "Lima",
+                status: "active"
+            },
+            {
+                id: 2,
+                name: "Suministros Metálicos",
+                ruc: "20987654321",
+                category: "Metales",
+                phone: "+51 945 123 789",
+                email: "contacto@metalicos.com",
+                city: "Arequipa",
+                status: "active"
+            },
+            {
+                id: 3,
+                name: "Maderas MDF Corp",
+                ruc: "20555666777",
+                category: "Maderas",
+                phone: "+51 912 345 678",
+                email: "ventas@maderasmdf.com",
+                city: "Cusco",
+                status: "active"
+            },
+            {
+                id: 4,
+                name: "Cerámicas Industriales",
+                ruc: "20444555666",
+                category: "Cerámicas",
+                phone: "+51 956 789 123",
+                email: "info@ceramicas.com",
+                city: "Trujillo",
+                status: "active"
+            },
+            {
+                id: 5,
+                name: "Acrílicos Premium",
+                ruc: "20333444555",
+                category: "Acrílicos",
+                phone: "+51 923 456 789",
+                email: "pedidos@acrilicos.com",
+                city: "Lima",
+                status: "active"
+            },
+            {
+                id: 6,
+                name: "Neopreno Supply",
+                ruc: "20222333444",
+                category: "Otros",
+                phone: "+51 934 567 890",
+                email: "ventas@neopreno.com",
+                city: "Iquitos",
+                status: "active"
+            },
+            {
+                id: 7,
+                name: "Cristales y Vidrios",
+                ruc: "20111222333",
+                category: "Otros",
+                phone: "+51 945 678 901",
+                email: "contacto@cristales.com",
+                city: "Piura",
+                status: "active"
+            }
+        ];
+
+        // Función para cargar productos desde el inventario real
+        function loadInventoryProducts() {
+            try {
+                const savedInventoryData = localStorage.getItem('inventoryData');
+                if (savedInventoryData) {
+                    const inventoryData = JSON.parse(savedInventoryData);
+                    console.log('Cargando productos del inventario:', inventoryData.length, 'productos encontrados');
+                    
+                    const products = inventoryData.map(product => ({
+                        id: Number(product.id), // Asegurar que el ID es un número
+                        name: product.name,
+                        code: product.code,
+                        category: product.category,
+                        costPrice: Number(product.costPrice || 0),
+                        supplier: product.supplier || 'Sin proveedor',
+                        stock: Number(product.stock || 0)
+                    }));
+                    
+                    console.log('Productos procesados:', products.map(p => ({ id: p.id, name: p.name, stock: p.stock })));
+                    return products;
+                }
+            } catch (error) {
+                console.error('Error al cargar productos del inventario:', error);
+            }
+            
+            console.log('No hay datos en localStorage, usando datos por defecto');
+            // Si no hay datos en localStorage, usar datos por defecto
+            return [
+                {
+                    id: 1,
+                    name: "Camiseta Blanca Premium",
+                    code: "TEX-001",
+                    category: "Textil",
+                    costPrice: 8.50,
+                    supplier: "Proveedor Textil S.A.",
+                    stock: 45
+                },
+                {
+                    id: 2,
+                    name: "Taza de Aluminio",
+                    code: "ALU-001",
+                    category: "Aluminio",
+                    costPrice: 4.20,
+                    supplier: "Suministros Metálicos",
+                    stock: 25
+                },
+                {
+                    id: 3,
+                    name: "Portarretrato MDF",
+                    code: "MDF-001",
+                    category: "MDF",
+                    costPrice: 3.50,
+                    supplier: "Maderas MDF Corp",
+                    stock: 8
+                },
+                {
+                    id: 4,
+                    name: "Taza Cerámica 11oz",
+                    code: "CER-001",
+                    category: "Ceramica",
+                    costPrice: 2.75,
+                    supplier: "Cerámicas Industriales",
+                    stock: 150
+                }
+            ];
+        }
+
+        // Datos de productos (cargados dinámicamente desde inventario)
+        let inventoryProducts = [];
+
+        // Datos simulados de compras
+        let purchases = [
+            {
+                id: 1,
+                orderNumber: "OC-001",
+                date: "2024-03-15",
+                supplier: "Proveedor Textil S.A.",
+                products: ["Camiseta Blanca Premium (50)", "Polo Polyester (30)"],
+                total: 1250.00,
+                status: "received",
+                deliveryDate: "2024-03-20",
+                reference: "Pedido urgente",
+                paymentMethod: "transfer"
+            },
+            {
+                id: 2,
+                orderNumber: "OC-002",
+                date: "2024-03-16",
+                supplier: "Suministros Metálicos",
+                products: ["Taza de Aluminio (100)", "Botella Aluminio Sport (25)"],
+                total: 890.50,
+                status: "pending",
+                deliveryDate: "2024-03-25",
+                reference: "Stock mensual",
+                paymentMethod: "credit"
+            },
+            {
+                id: 3,
+                orderNumber: "OC-003",
+                date: "2024-03-17",
+                supplier: "Maderas MDF Corp",
+                products: ["Portarretrato MDF (30)", "Reloj MDF Redondo (15)"],
+                total: 675.00,
+                status: "approved",
+                deliveryDate: "2024-03-22",
+                reference: "Pedido especial",
+                paymentMethod: "cash"
+            },
+            {
+                id: 4,
+                orderNumber: "OC-004",
+                date: "2024-03-18",
+                supplier: "Cerámicas Industriales",
+                products: ["Taza Cerámica 11oz (200)"],
+                total: 2100.00,
+                status: "received",
+                deliveryDate: "2024-03-23",
+                reference: "Reposición stock",
+                paymentMethod: "transfer"
+            },
+            {
+                id: 5,
+                orderNumber: "OC-005",
+                date: "2024-03-19",
+                supplier: "Acrílicos Premium",
+                products: ["Llavero Acrílico (150)"],
+                total: 1450.75,
+                status: "cancelled",
+                deliveryDate: "2024-03-28",
+                reference: "Cancelado por cliente",
+                paymentMethod: "cash"
+            }
+        ];
+
+        // Función para renderizar la tabla
+        function renderTable(data = purchases) {
+            const tbody = document.getElementById('purchasesTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(purchase => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${purchase.orderNumber}</strong></td>
+                    <td>${formatDate(purchase.date)}</td>
+                    <td>${purchase.supplier}</td>
+                    <td>${purchase.products.join(', ')}</td>
+                    <td><strong>$${purchase.total.toLocaleString('es-MX', {minimumFractionDigits: 2})}</strong></td>
+                    <td><span class="status-badge status-${purchase.status}">${getStatusText(purchase.status)}</span></td>
+                    <td>${formatDate(purchase.deliveryDate)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-view btn-sm" onclick="viewPurchase(${purchase.id})" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-edit btn-sm" onclick="editPurchase(${purchase.id})" title="Cambiar estado">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${purchase.status !== 'received' ? 
+                                `<button class="btn btn-success btn-sm" onclick="markAsReceived(${purchase.id})" title="Marcar como recibido">
+                                    <i class="fas fa-check"></i>
+                                </button>` : ''}
+                            <button class="btn btn-delete btn-sm" onclick="deletePurchase(${purchase.id})" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Funciones de persistencia de datos
+        async function saveDataToLocalStorage() {
+            try {
+                // Guardar en localStorage como respaldo
+                localStorage.setItem('purchasesData', JSON.stringify(purchases));
+                console.log('Datos de compras guardados en localStorage');
+                
+                // Guardar en Firebase si está disponible
+                if (window.saveToFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                    try {
+                        await window.saveToFirebase('compras', {
+                            purchases: purchases,
+                            lastUpdated: new Date().toISOString()
+                        });
+                        console.log('🔥 Datos de compras sincronizados con Firebase');
+                        showSyncNotification('✅ Compras sincronizadas con la nube');
+                    } catch (error) {
+                        console.error('❌ Error al sincronizar compras con Firebase:', error);
+                        showSyncNotification('⚠️ Error en sincronización - usando datos locales');
+                    }
+                }
+            } catch (error) {
+                console.error('Error al guardar datos de compras:', error);
+            }
+        }
+
+        async function loadDataFromLocalStorage() {
+            try {
+                console.log('🔥 Intentando cargar datos de compras desde Firebase...');
+                
+                // Intentar cargar desde Firebase primero
+                if (window.loadFromFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                    try {
+                        const firebaseData = await window.loadFromFirebase('compras');
+                        if (firebaseData && firebaseData.purchases) {
+                            purchases = firebaseData.purchases;
+                            console.log('🔥 Datos de compras cargados desde Firebase:', purchases.length, 'compras');
+                            showSyncNotification('✅ Compras sincronizadas desde la nube');
+                            return true;
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ No se pudieron cargar datos desde Firebase:', error);
+                    }
+                }
+                
+                // Fallback a localStorage
+                const savedPurchasesData = localStorage.getItem('purchasesData');
+                if (savedPurchasesData) {
+                    purchases = JSON.parse(savedPurchasesData);
+                    console.log('📁 Datos de compras cargados desde localStorage');
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error al cargar datos de compras:', error);
+            }
+            return false;
+        }
+
+        // Función para mostrar notificaciones de sincronización
+        function showSyncNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: linear-gradient(135deg, #48bb78, #38a169);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1002;
+                max-width: 280px;
+                font-size: 0.85rem;
+                animation: slideInRight 0.5s ease;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-cloud"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+            
+            if (!document.getElementById('sync-animations')) {
+                const style = document.createElement('style');
+                style.id = 'sync-animations';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOutRight {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // Funciones auxiliares
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-MX');
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'Pendiente',
+                'approved': 'Aprobado',
+                'received': 'Recibido',
+                'cancelled': 'Cancelado'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Función de búsqueda
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const supplierFilter = document.getElementById('supplierFilter').value;
+
+            const filtered = purchases.filter(purchase => {
+                const matchesSearch = purchase.orderNumber.toLowerCase().includes(searchTerm) ||
+                                    purchase.supplier.toLowerCase().includes(searchTerm) ||
+                                    purchase.products.some(p => p.toLowerCase().includes(searchTerm));
+                
+                const matchesStatus = !statusFilter || purchase.status === statusFilter;
+                const matchesSupplier = !supplierFilter || purchase.supplier.toLowerCase().includes(supplierFilter.toLowerCase());
+
+                return matchesSearch && matchesStatus && matchesSupplier;
+            });
+
+            renderTable(filtered);
+        }
+
+        // Event listeners para filtros
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
+        document.getElementById('supplierFilter').addEventListener('change', filterTable);
+
+        // Funciones del modal
+        function openPurchaseModal() {
+            // Cargar productos reales del inventario
+            inventoryProducts = loadInventoryProducts();
+            console.log('Modal abierto - Productos disponibles:', inventoryProducts.length);
+            console.log('Lista de productos:', inventoryProducts.map(p => ({ id: p.id, name: p.name, stock: p.stock })));
+            
+            document.getElementById('purchaseModal').classList.add('active');
+            loadSuppliersInModal();
+            loadProductsInModal();
+            setCurrentDate();
+        }
+
+        // Cargar proveedores en el modal
+        function loadSuppliersInModal() {
+            const supplierSelect = document.getElementById('supplier');
+            const activeSuppliers = loadSuppliersData();
+            
+            // Limpiar opciones existentes excepto la primera
+            supplierSelect.innerHTML = '<option value="">Seleccionar proveedor</option>';
+            
+            activeSuppliers.forEach(supplier => {
+                const option = document.createElement('option');
+                option.value = supplier.id;
+                option.textContent = `${supplier.name} - ${supplier.city}`;
+                option.dataset.supplierName = supplier.name;
+                supplierSelect.appendChild(option);
+            });
+        }
+
+        // Cargar productos en selects del modal
+        function loadProductsInModal() {
+            const productSelects = document.querySelectorAll('#purchaseModal .product-select');
+            productSelects.forEach(select => {
+                loadProductsInSelect(select);
+            });
+        }
+
+        // Cargar productos en un select específico
+        function loadProductsInSelect(select) {
+            select.innerHTML = '<option value="">Seleccionar producto</option>';
+            
+            if (inventoryProducts.length === 0) {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "No hay productos en inventario";
+                option.disabled = true;
+                select.appendChild(option);
+                return;
+            }
+            
+            inventoryProducts.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.textContent = `${product.name} (${product.code}) - Stock: ${product.stock}`;
+                option.dataset.costPrice = product.costPrice;
+                option.dataset.supplier = product.supplier;
+                option.dataset.stock = product.stock;
+                
+                // Deshabilitar productos sin stock
+                if (product.stock <= 0) {
+                    option.disabled = true;
+                    option.textContent += ' - SIN STOCK';
+                }
+                
+                select.appendChild(option);
+            });
+        }
+
+        // Establecer fecha actual
+        function setCurrentDate() {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('orderDate').value = formattedDate;
+            
+            // Establecer fecha de entrega predeterminada (7 días después)
+            const deliveryDate = new Date(today);
+            deliveryDate.setDate(deliveryDate.getDate() + 7);
+            document.getElementById('deliveryDate').value = deliveryDate.toISOString().split('T')[0];
+        }
+
+        // Cargar proveedores en filtros
+        function loadSuppliersInFilters() {
+            const supplierFilter = document.getElementById('supplierFilter');
+            const activeSuppliers = loadSuppliersData();
+            
+            activeSuppliers.forEach(supplier => {
+                const option = document.createElement('option');
+                option.value = supplier.name;
+                option.textContent = supplier.name;
+                supplierFilter.appendChild(option);
+            });
+        }
+
+        function closePurchaseModal() {
+            document.getElementById('purchaseModal').classList.remove('active');
+            document.getElementById('purchaseForm').reset();
+            
+            // Resetear estado inicial a pendiente
+            document.getElementById('initialStatus').value = 'pending';
+            
+            // Limpiar productos adicionales, mantener solo la primera fila
+            const container = document.getElementById('productsContainer');
+            const rows = container.querySelectorAll('.product-row');
+            for (let i = 1; i < rows.length; i++) {
+                rows[i].remove();
+            }
+            
+            // Limpiar y recargar la primera fila
+            const firstRow = container.querySelector('.product-row');
+            if (firstRow) {
+                const firstSelect = firstRow.querySelector('.product-select');
+                firstSelect.innerHTML = '<option value="">Seleccionar producto</option>';
+                firstRow.querySelector('.quantity-input').value = '';
+                firstRow.querySelector('.price-input').value = '';
+                firstRow.querySelector('.subtotal-input').value = '$0.00';
+            }
+            
+            // Resetear total
+            document.getElementById('totalAmount').textContent = '$0.00';
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.remove('active');
+        }
+
+        // Función para agregar fila de producto
+        function addProductRow() {
+            const container = document.getElementById('productsContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'product-row';
+            newRow.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 15px; align-items: end; margin-bottom: 15px;';
+            
+            newRow.innerHTML = `
+                <div class="form-group">
+                    <select class="form-control product-select">
+                        <option value="">Seleccionar producto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="number" class="form-control quantity-input" placeholder="0" min="1">
+                </div>
+                <div class="form-group">
+                    <input type="number" class="form-control price-input" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control subtotal-input" readonly placeholder="$0.00">
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="removeProductRow(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            
+            container.appendChild(newRow);
+            
+            // Cargar productos en el nuevo select
+            const newSelect = newRow.querySelector('.product-select');
+            loadProductsInSelect(newSelect);
+            
+            setupProductRowEvents(newRow);
+        }
+
+        // Función para remover fila de producto
+        function removeProductRow(button) {
+            const container = document.getElementById('productsContainer');
+            if (container.children.length > 1) {
+                button.closest('.product-row').remove();
+                calculateTotal();
+            }
+        }
+
+        // Configurar eventos para cálculos
+        function setupProductRowEvents(row) {
+            const productSelect = row.querySelector('.product-select');
+            const quantityInput = row.querySelector('.quantity-input');
+            const priceInput = row.querySelector('.price-input');
+            const subtotalInput = row.querySelector('.subtotal-input');
+
+            // Autocompletar precio cuando se selecciona un producto
+            productSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    const costPrice = selectedOption.dataset.costPrice;
+                    priceInput.value = costPrice;
+                    calculateSubtotal();
+                } else {
+                    priceInput.value = '';
+                    subtotalInput.value = '$0.00';
+                    calculateTotal();
+                }
+            });
+
+            function calculateSubtotal() {
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const subtotal = quantity * price;
+                subtotalInput.value = `$${subtotal.toFixed(2)}`;
+                calculateTotal();
+            }
+
+            quantityInput.addEventListener('input', calculateSubtotal);
+            priceInput.addEventListener('input', calculateSubtotal);
+        }
+
+        // Calcular total general
+        function calculateTotal() {
+            const subtotalInputs = document.querySelectorAll('.subtotal-input');
+            let total = 0;
+
+            subtotalInputs.forEach(input => {
+                const value = parseFloat(input.value.replace('$', '')) || 0;
+                total += value;
+            });
+
+            document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Funciones de acciones
+        function viewPurchase(id) {
+            const purchase = purchases.find(p => p.id === id);
+            if (!purchase) return;
+
+            const modalBody = document.getElementById('viewModalBody');
+            modalBody.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div>
+                        <h4 style="color: #2d3748; margin-bottom: 15px;">Información General</h4>
+                        <p><strong>Número de Orden:</strong> ${purchase.orderNumber}</p>
+                        <p><strong>Fecha:</strong> ${formatDate(purchase.date)}</p>
+                        <p><strong>Proveedor:</strong> ${purchase.supplier}</p>
+                        <p><strong>Estado:</strong> <span class="status-badge status-${purchase.status}">${getStatusText(purchase.status)}</span></p>
+                        <p><strong>Fecha de Entrega:</strong> ${formatDate(purchase.deliveryDate)}</p>
+                        <p><strong>Método de Pago:</strong> ${purchase.paymentMethod}</p>
+                        <p><strong>Referencia:</strong> ${purchase.reference}</p>
+                    </div>
+                    <div>
+                        <h4 style="color: #2d3748; margin-bottom: 15px;">Productos</h4>
+                        ${purchase.products.map(product => `<p>• ${product}</p>`).join('')}
+                        <h4 style="color: #2d3748; margin-top: 20px;">Total: $${purchase.total.toLocaleString('es-MX', {minimumFractionDigits: 2})}</h4>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('viewModal').classList.add('active');
+        }
+
+        function editPurchase(id) {
+            const purchase = purchases.find(p => p.id === id);
+            if (!purchase) return;
+
+            const newStatus = prompt(`Estado actual: ${getStatusText(purchase.status)}\n\nSelecciona nuevo estado:\n1. Pendiente\n2. Aprobado\n3. Recibido\n4. Cancelado\n\nIngresa el número (1-4):`, '1');
+            
+            if (newStatus === null) return; // Usuario canceló
+
+            const statusMap = {
+                '1': 'pending',
+                '2': 'approved', 
+                '3': 'received',
+                '4': 'cancelled'
+            };
+
+            const selectedStatus = statusMap[newStatus];
+            if (!selectedStatus) {
+                alert('Opción no válida');
+                return;
+            }
+
+            const oldStatus = purchase.status;
+            purchase.status = selectedStatus;
+
+            // Si se marca como recibido y antes no lo estaba, actualizar inventario
+            if (selectedStatus === 'received' && oldStatus !== 'received') {
+                const confirmUpdate = confirm('¿Deseas actualizar el inventario automáticamente con los productos de esta compra?');
+                
+                if (confirmUpdate) {
+                    // Extraer información de productos de la compra
+                    const productUpdates = [];
+                    purchase.products.forEach(productStr => {
+                        // Formato esperado: "Nombre del Producto (cantidad)"
+                        const match = productStr.match(/^(.+?)\s*\((\d+)\)$/);
+                        if (match) {
+                            const productName = match[1].trim();
+                            const quantity = parseInt(match[2]);
+                            
+                            // Buscar el producto en el inventario
+                            const product = inventoryProducts.find(p => 
+                                productStr.includes(p.name) || productStr.includes(p.code)
+                            );
+                            
+                            if (product) {
+                                productUpdates.push({
+                                    productId: product.id,
+                                    quantity: quantity,
+                                    productName: productName
+                                });
+                            }
+                        }
+                    });
+
+                    if (productUpdates.length > 0) {
+                        const updated = updateInventoryStock(productUpdates);
+                        if (updated) {
+                            const updateSummary = productUpdates.map(update => 
+                                `• ${update.productName}: +${update.quantity} unidades`
+                            ).join('\n');
+                            
+                            alert(`✅ Compra marcada como recibida\n✅ Inventario actualizado\n\nProductos actualizados:\n${updateSummary}`);
+                        } else {
+                            alert('❌ Error al actualizar inventario');
+                        }
+                    } else {
+                        alert('⚠️ No se pudieron identificar productos para actualizar inventario');
+                    }
+                }
+            }
+
+            renderTable();
+            alert(`Estado de compra actualizado a: ${getStatusText(selectedStatus)}`);
+        }
+
+        async function deletePurchase(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar esta compra?')) {
+                purchases = purchases.filter(p => p.id !== id);
+                await saveDataToLocalStorage(); // Guardar datos
+                renderTable();
+                alert('Compra eliminada exitosamente');
+            }
+        }
+
+        // Función para actualizar el inventario cuando se recibe una compra
+        function updateInventoryStock(productUpdates) {
+            try {
+                console.log('Intentando actualizar inventario con:', productUpdates);
+                
+                const savedInventoryData = localStorage.getItem('inventoryData');
+                if (!savedInventoryData) {
+                    console.error('No se encontró inventario para actualizar');
+                    alert('Error: No se encontró inventario en el sistema');
+                    return false;
+                }
+
+                let inventoryData = JSON.parse(savedInventoryData);
+                console.log('Inventario actual cargado:', inventoryData.length, 'productos');
+                let updated = false;
+
+                productUpdates.forEach(update => {
+                    console.log(`Buscando producto con ID: ${update.productId} (tipo: ${typeof update.productId})`);
+                    
+                    // Buscar por ID (convertir ambos a number para comparación)
+                    const productIndex = inventoryData.findIndex(p => Number(p.id) === Number(update.productId));
+                    
+                    if (productIndex !== -1) {
+                        const oldStock = inventoryData[productIndex].stock;
+                        inventoryData[productIndex].stock = Number(inventoryData[productIndex].stock) + Number(update.quantity);
+                        updated = true;
+                        console.log(`✅ Stock actualizado: ${inventoryData[productIndex].name}`);
+                        console.log(`   Stock anterior: ${oldStock}`);
+                        console.log(`   Cantidad agregada: ${update.quantity}`);
+                        console.log(`   Stock nuevo: ${inventoryData[productIndex].stock}`);
+                    } else {
+                        console.error(`❌ No se encontró producto con ID: ${update.productId}`);
+                        console.log('IDs disponibles en inventario:', inventoryData.map(p => ({ id: p.id, name: p.name })));
+                    }
+                });
+
+                if (updated) {
+                    localStorage.setItem('inventoryData', JSON.stringify(inventoryData));
+                    console.log('✅ Inventario guardado en localStorage');
+                    
+                    // Actualizar productos locales
+                    inventoryProducts = loadInventoryProducts();
+                    console.log('✅ Productos locales actualizados');
+                    return true;
+                } else {
+                    console.error('❌ No se actualizó ningún producto');
+                    alert('Error: No se pudo actualizar el inventario. Verifique los productos seleccionados.');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error al actualizar inventario:', error);
+                alert('Error inesperado al actualizar inventario: ' + error.message);
+            }
+            return false;
+        }
+
+        // Función para refrescar datos del inventario y proveedores
+        function refreshInventoryData() {
+            inventoryProducts = loadInventoryProducts();
+            console.log('Productos cargados del inventario:', inventoryProducts.length);
+            
+            // Si el modal está abierto, recargar los productos
+            if (document.getElementById('purchaseModal').classList.contains('active')) {
+                loadProductsInModal();
+            }
+        }
+
+        // Escuchar cambios en localStorage para mantener sincronización
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'inventoryData') {
+                refreshInventoryData();
+            }
+        });
+
+        // Función para exportar a Excel
+        function exportToExcel() {
+            const ws = XLSX.utils.json_to_sheet(purchases.map(p => ({
+                'Número de Orden': p.orderNumber,
+                'Fecha': p.date,
+                'Proveedor': p.supplier,
+                'Productos': p.products.join(', '),
+                'Total': p.total,
+                'Estado': getStatusText(p.status),
+                'Fecha de Entrega': p.deliveryDate,
+                'Referencia': p.reference,
+                'Método de Pago': p.paymentMethod
+            })));
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Compras');
+
+            const fileName = `compras_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // Manejo del formulario
+        document.getElementById('purchaseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validar que hay al menos un producto
+            const productRows = document.querySelectorAll('.product-row');
+            let hasValidProduct = false;
+            let productUpdates = [];
+
+            productRows.forEach(row => {
+                const productSelect = row.querySelector('.product-select');
+                const quantityInput = row.querySelector('.quantity-input');
+                const priceInput = row.querySelector('.price-input');
+
+                if (productSelect.value && quantityInput.value && priceInput.value) {
+                    hasValidProduct = true;
+                    
+                    const productId = parseInt(productSelect.value);
+                    const quantity = parseInt(quantityInput.value);
+                    const productName = productSelect.options[productSelect.selectedIndex].textContent;
+                    
+                    console.log(`Producto agregado para actualización: ID=${productId}, Cantidad=${quantity}, Nombre=${productName}`);
+                    
+                    productUpdates.push({
+                        productId: productId,
+                        quantity: quantity,
+                        productName: productName
+                    });
+                }
+            });
+
+            if (!hasValidProduct) {
+                alert('Por favor, agrega al menos un producto válido');
+                return;
+            }
+
+            // Obtener el nombre del proveedor seleccionado
+            const supplierSelect = document.getElementById('supplier');
+            const selectedSupplierOption = supplierSelect.options[supplierSelect.selectedIndex];
+            const supplierName = selectedSupplierOption.dataset.supplierName || selectedSupplierOption.textContent;
+
+            // Obtener estado inicial
+            const initialStatus = document.getElementById('initialStatus').value;
+
+            // Crear nueva compra
+            const newPurchase = {
+                id: purchases.length + 1,
+                orderNumber: `OC-${String(purchases.length + 1).padStart(3, '0')}`,
+                date: document.getElementById('orderDate').value,
+                supplier: supplierName,
+                products: [], // Se llenaría con los productos seleccionados
+                total: parseFloat(document.getElementById('totalAmount').textContent.replace('$', '')),
+                status: initialStatus,
+                deliveryDate: document.getElementById('deliveryDate').value,
+                reference: document.getElementById('reference').value,
+                paymentMethod: document.getElementById('paymentMethod').value
+            };
+
+            // Agregar productos
+            productRows.forEach(row => {
+                const productSelect = row.querySelector('.product-select');
+                const quantityInput = row.querySelector('.quantity-input');
+
+                if (productSelect.value && quantityInput.value) {
+                    const productText = productSelect.options[productSelect.selectedIndex].textContent;
+                    newPurchase.products.push(`${productText.split(' - Stock:')[0]} (${quantityInput.value})`);
+                }
+            });
+
+            // Si el estado es "recibido", actualizar el inventario
+            let inventoryUpdated = false;
+            if (initialStatus === 'received') {
+                console.log('Estado inicial es "recibido", procediendo a actualizar inventario...');
+                console.log('Productos a actualizar:', productUpdates);
+                inventoryUpdated = updateInventoryStock(productUpdates);
+                console.log('Resultado de actualización:', inventoryUpdated);
+            }
+
+            purchases.unshift(newPurchase);
+            await saveDataToLocalStorage(); // Guardar datos
+            renderTable();
+            closePurchaseModal();
+            
+            // Mensaje de confirmación
+            let message = 'Orden de compra creada exitosamente';
+            if (inventoryUpdated) {
+                message += '\n✅ Inventario actualizado automáticamente';
+                
+                // Mostrar resumen de actualización
+                const updateSummary = productUpdates.map(update => 
+                    `• ${update.productName.split(' - Stock:')[0]}: +${update.quantity} unidades`
+                ).join('\n');
+                
+                message += '\n\nProductos actualizados:\n' + updateSummary;
+            }
+            
+            alert(message);
+        });
+
+        // Función para marcar compra como recibida y actualizar inventario rápidamente
+        async function markAsReceived(id) {
+            const purchase = purchases.find(p => p.id === id);
+            if (!purchase) return;
+
+            if (purchase.status === 'received') {
+                alert('Esta compra ya está marcada como recibida');
+                return;
+            }
+
+            const confirmUpdate = confirm(`¿Marcar la compra ${purchase.orderNumber} como recibida y actualizar el inventario automáticamente?`);
+            if (!confirmUpdate) return;
+
+            purchase.status = 'received';
+            await saveDataToLocalStorage(); // Guardar datos
+
+            // Extraer y actualizar inventario
+            const productUpdates = [];
+            purchase.products.forEach(productStr => {
+                const match = productStr.match(/^(.+?)\s*\((\d+)\)$/);
+                if (match) {
+                    const productName = match[1].trim();
+                    const quantity = parseInt(match[2]);
+                    
+                    const product = inventoryProducts.find(p => 
+                        productStr.includes(p.name) || productStr.includes(p.code)
+                    );
+                    
+                    if (product) {
+                        productUpdates.push({
+                            productId: product.id,
+                            quantity: quantity,
+                            productName: productName
+                        });
+                    }
+                }
+            });
+
+            if (productUpdates.length > 0) {
+                const updated = updateInventoryStock(productUpdates);
+                if (updated) {
+                    renderTable();
+                    const updateSummary = productUpdates.map(update => 
+                        `• ${update.productName}: +${update.quantity} unidades`
+                    ).join('\n');
+                    
+                    alert(`✅ Compra marcada como recibida\n✅ Inventario actualizado\n\nProductos actualizados:\n${updateSummary}`);
+                    
+                    // Refrescar productos
+                    inventoryProducts = loadInventoryProducts();
+                }
+            }
+        }
+
+        // Cerrar modales al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            const purchaseModal = document.getElementById('purchaseModal');
+            const viewModal = document.getElementById('viewModal');
+            
+            if (e.target === purchaseModal) {
+                closePurchaseModal();
+            }
+            if (e.target === viewModal) {
+                closeViewModal();
+            }
+        });
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔥 Inicializando módulo de compras...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Cargar datos de compras
+            await loadDataFromLocalStorage();
+            
+            // Cargar productos del inventario al inicializar
+            inventoryProducts = loadInventoryProducts();
+            
+            renderTable();
+            loadSuppliersInFilters();
+            setupProductRowEvents(document.querySelector('.product-row'));
+
+            // Animaciones de entrada
+            const cards = document.querySelectorAll('.stat-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('fade-in');
+                }, index * 100);
+            });
+
+            setTimeout(() => {
+                document.querySelector('.card').classList.add('fade-in');
+            }, 400);
+        });
+    </script>
+</body>
+</html>

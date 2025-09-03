@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas - Sublimaciones Jeziel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f7fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .sidebar-logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0aec0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-left-color: #667eea;
+        }
+
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.15);
+            color: #90cdf4;
+            border-left-color: #667eea;
+        }
+
+        .nav-item i {
+            width: 24px;
+            margin-right: 12px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-layout {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title i {
+            color: #667eea;
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+        }
+
+        /* Financial Overview */
+        .financial-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .overview-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .overview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .card-change {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-change.positive {
+            color: #38a169;
+        }
+
+        .card-change.negative {
+            color: #e53e3e;
+        }
+
+        .card-change.neutral {
+            color: #718096;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .control-btn:hover:not(.active) {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .chart-canvas {
+            position: relative;
+            height: 400px;
+        }
+
+        /* Financial Metrics */
+        .metrics-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .metrics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .metrics-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-item {
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #718096;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .metric-description {
+            font-size: 12px;
+            color: #4a5568;
+            margin-top: 5px;
+        }
+
+        /* Cash Flow Section */
+        .cashflow-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .cashflow-header {
+            padding: 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cashflow-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cashflow-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cashflow-table th {
+            background: #f7fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .cashflow-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        .cashflow-table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .flow-positive {
+            color: #38a169;
+            font-weight: 600;
+        }
+
+        .flow-negative {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+
+        .flow-category {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        /* Budget Progress */
+        .budget-progress {
+            margin-top: 20px;
+        }
+
+        .progress-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-info {
+            flex: 1;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+
+        .progress-amounts {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-left: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.good {
+            background: #38a169;
+        }
+
+        .progress-fill.warning {
+            background: #dd6b20;
+        }
+
+        .progress-fill.danger {
+            background: #e53e3e;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #718096;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #e53e3e;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .main-layout {
+                margin-left: 70px;
+            }
+
+            .sidebar-logo-text {
+                display: none;
+            }
+
+            .nav-item span {
+                display: none;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .header-title {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .financial-overview {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo">
+                <div class="sidebar-logo-icon">
+                    <i class="fas fa-sublimation-icon" style="font-size: 20px;">SJ</i>
+                </div>
+                <span class="sidebar-logo-text">Sublimaciones Jeziel</span>
+            </a>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="../index.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Operaciones</div>
+                <a href="inventario.html" class="nav-item">
+                    <i class="fas fa-boxes"></i>
+                    <span>Inventario</span>
+                </a>
+                <a href="ventas.html" class="nav-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Ventas</span>
+                </a>
+                <a href="compras.html" class="nav-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Compras</span>
+                </a>
+                <a href="produccion.html" class="nav-item">
+                    <i class="fas fa-industry"></i>
+                    <span>Producción</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Contactos</div>
+                <a href="clientes.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+                <a href="proveedores.html" class="nav-item">
+                    <i class="fas fa-truck"></i>
+                    <span>Proveedores</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Finanzas</div>
+                <a href="facturas.html" class="nav-item">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Facturas</span>
+                </a>
+                <a href="contabilidad.html" class="nav-item">
+                    <i class="fas fa-calculator"></i>
+                    <span>Contabilidad</span>
+                </a>
+                <a href="finanzas.html" class="nav-item active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Finanzas</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Análisis</div>
+                <a href="reportes.html" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reportes</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Sistema</div>
+                <a href="configuracion.html" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+                <a href="soporte.html" class="nav-item">
+                    <i class="fas fa-life-ring"></i>
+                    <span>Soporte</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-layout">
+        <header class="header">
+            <div class="header-left">
+                <div>
+                    <h1 class="header-title">
+                        <i class="fas fa-chart-line"></i>
+                        Finanzas
+                    </h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">Dashboard</a> / Finanzas
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="exportFinancialReport()">
+                    <i class="fas fa-download"></i>
+                    Exportar Reporte
+                </button>
+                <button class="btn-primary" onclick="openBudgetModal()">
+                    <i class="fas fa-plus"></i>
+                    Nuevo Presupuesto
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <!-- Financial Overview -->
+            <div class="financial-overview">
+                <div class="overview-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-dollar-sign"></i>
+                            Ingresos Totales
+                        </div>
+                        <div class="card-icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">S/ 12,850</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +18.3% vs mes anterior
+                    </div>
+                </div>
+
+                <div class="overview-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-credit-card"></i>
+                            Gastos Totales
+                        </div>
+                        <div class="card-icon">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">S/ 4,320</div>
+                    <div class="card-change negative">
+                        <i class="fas fa-arrow-up"></i>
+                        +12.1% vs mes anterior
+                    </div>
+                </div>
+
+                <div class="overview-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Utilidad Neta
+                        </div>
+                        <div class="card-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">S/ 8,530</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +32.1% vs mes anterior
+                    </div>
+                </div>
+
+                <div class="overview-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-wallet"></i>
+                            Flujo de Caja
+                        </div>
+                        <div class="card-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">S/ 8,530</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        Positivo este mes
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">
+                            <i class="fas fa-chart-area"></i>
+                            Análisis de Ingresos vs Gastos
+                        </h2>
+                        <div class="chart-controls">
+                            <button class="control-btn" onclick="changeChartPeriod('week')">Semana</button>
+                            <button class="control-btn active" onclick="changeChartPeriod('month')">Mes</button>
+                            <button class="control-btn" onclick="changeChartPeriod('year')">Año</button>
+                        </div>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Distribución de Gastos
+                        </h3>
+                    </div>
+                    <div class="chart-canvas" style="height: 300px;">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                    
+                    <div class="budget-progress">
+                        <div class="progress-item">
+                            <div class="progress-info">
+                                <div class="progress-label">Material Sublimación</div>
+                                <div class="progress-amounts">S/ 2,800 / S/ 3,500</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill good" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-item">
+                            <div class="progress-info">
+                                <div class="progress-label">Gastos Operativos</div>
+                                <div class="progress-amounts">S/ 950 / S/ 1,200</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill warning" style="width: 79%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-item">
+                            <div class="progress-info">
+                                <div class="progress-label">Marketing</div>
+                                <div class="progress-amounts">S/ 570 / S/ 500</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill danger" style="width: 114%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Metrics -->
+            <div class="metrics-section">
+                <div class="metrics-header">
+                    <h2 class="metrics-title">
+                        <i class="fas fa-calculator"></i>
+                        Indicadores Financieros
+                    </h2>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Margen de Utilidad</div>
+                        <div class="metric-value">35.8%</div>
+                        <div class="metric-description">Porcentaje de ganancia sobre ingresos</div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <div class="metric-label">ROI (Retorno de Inversión)</div>
+                        <div class="metric-value">66.4%</div>
+                        <div class="metric-description">Rentabilidad sobre la inversión</div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <div class="metric-label">Punto de Equilibrio</div>
+                        <div class="metric-value">S/ 4,800</div>
+                        <div class="metric-description">Ventas mínimas para cubrir costos</div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <div class="metric-label">Liquidez Corriente</div>
+                        <div class="metric-value">2.4</div>
+                        <div class="metric-description">Capacidad para cubrir deudas</div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <div class="metric-label">Rotación de Inventario</div>
+                        <div class="metric-value">4.2x</div>
+                        <div class="metric-description">Veces que se renueva el inventario</div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <div class="metric-label">Días de Cobranza</div>
+                        <div class="metric-value">18 días</div>
+                        <div class="metric-description">Tiempo promedio de cobro</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cash Flow Table -->
+            <div class="cashflow-section">
+                <div class="cashflow-header">
+                    <h2 class="cashflow-title">
+                        <i class="fas fa-exchange-alt"></i>
+                        Flujo de Caja Proyectado
+                    </h2>
+                    <button class="btn-secondary" onclick="updateCashFlow()">
+                        <i class="fas fa-refresh"></i>
+                        Actualizar
+                    </button>
+                </div>
+                
+                <table class="cashflow-table">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Septiembre</th>
+                            <th>Octubre</th>
+                            <th>Noviembre</th>
+                            <th>Diciembre</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="flow-category">INGRESOS</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Ventas de Productos</td>
+                            <td class="flow-positive">S/ 9,200</td>
+                            <td class="flow-positive">S/ 10,500</td>
+                            <td class="flow-positive">S/ 12,000</td>
+                            <td class="flow-positive">S/ 13,800</td>
+                        </tr>
+                        <tr>
+                            <td>Servicios de Sublimación</td>
+                            <td class="flow-positive">S/ 3,650</td>
+                            <td class="flow-positive">S/ 4,200</td>
+                            <td class="flow-positive">S/ 4,850</td>
+                            <td class="flow-positive">S/ 5,500</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Ingresos</strong></td>
+                            <td class="flow-positive"><strong>S/ 12,850</strong></td>
+                            <td class="flow-positive"><strong>S/ 14,700</strong></td>
+                            <td class="flow-positive"><strong>S/ 16,850</strong></td>
+                            <td class="flow-positive"><strong>S/ 19,300</strong></td>
+                        </tr>
+                        
+                        <tr>
+                            <td class="flow-category">EGRESOS</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Compra de Materiales</td>
+                            <td class="flow-negative">$15,000</td>
+                            <td class="flow-negative">$16,000</td>
+                            <td class="flow-negative">$17,000</td>
+                            <td class="flow-negative">$18,000</td>
+                        </tr>
+                        <tr>
+                            <td>Gastos Operativos</td>
+                            <td class="flow-negative">$8,500</td>
+                            <td class="flow-negative">$8,500</td>
+                            <td class="flow-negative">$8,500</td>
+                            <td class="flow-negative">$9,000</td>
+                        </tr>
+                        <tr>
+                            <td>Nómina</td>
+                            <td class="flow-negative">$12,000</td>
+                            <td class="flow-negative">$12,000</td>
+                            <td class="flow-negative">$12,000</td>
+                            <td class="flow-negative">$14,000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Egresos</strong></td>
+                            <td class="flow-negative"><strong>$35,500</strong></td>
+                            <td class="flow-negative"><strong>$36,500</strong></td>
+                            <td class="flow-negative"><strong>$37,500</strong></td>
+                            <td class="flow-negative"><strong>$41,000</strong></td>
+                        </tr>
+                        
+                        <tr style="border-top: 2px solid #e2e8f0;">
+                            <td><strong>Flujo Neto</strong></td>
+                            <td class="flow-positive"><strong>$25,000</strong></td>
+                            <td class="flow-positive"><strong>$28,500</strong></td>
+                            <td class="flow-positive"><strong>$32,500</strong></td>
+                            <td class="flow-positive"><strong>$39,000</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Saldo Acumulado</strong></td>
+                            <td class="flow-positive"><strong>$59,130</strong></td>
+                            <td class="flow-positive"><strong>$87,630</strong></td>
+                            <td class="flow-positive"><strong>$120,130</strong></td>
+                            <td class="flow-positive"><strong>$159,130</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nuevo Presupuesto -->
+    <div id="budgetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Nuevo Presupuesto</h2>
+                <button class="close-btn" onclick="closeBudgetModal()">&times;</button>
+            </div>
+            
+            <form id="budgetForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Categoría *</label>
+                        <select class="form-input" id="budgetCategory" required>
+                            <option value="">Seleccionar categoría</option>
+                            <option value="materiales">Materiales</option>
+                            <option value="operativos">Gastos Operativos</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="nomina">Nómina</option>
+                            <option value="equipos">Equipos</option>
+                            <option value="mantenimiento">Mantenimiento</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Período *</label>
+                        <select class="form-input" id="budgetPeriod" required>
+                            <option value="mensual">Mensual</option>
+                            <option value="trimestral">Trimestral</option>
+                            <option value="semestral">Semestral</option>
+                            <option value="anual">Anual</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Monto Presupuestado *</label>
+                        <input type="number" class="form-input" id="budgetAmount" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Fecha Inicio *</label>
+                        <input type="date" class="form-input" id="budgetStartDate" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-input" id="budgetDescription" placeholder="Descripción del presupuesto..." rows="3"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeBudgetModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Crear Presupuesto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let revenueChart, expenseChart;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            setDefaultDate();
+            initializeCharts();
+        });
+
+        // Establecer fecha por defecto
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('budgetStartDate').value = today;
+        }
+
+        // Inicializar gráficos
+        function initializeCharts() {
+            initializeRevenueChart();
+            initializeExpenseChart();
+        }
+
+        // Gráfico de ingresos vs gastos
+        function initializeRevenueChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep'],
+                    datasets: [{
+                        label: 'Ingresos',
+                        data: [8500, 9200, 7800, 10500, 12000, 11200, 13500, 14800, 12850],
+                        borderColor: '#38a169',
+                        backgroundColor: 'rgba(56, 161, 105, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Gastos',
+                        data: [3200, 3800, 3500, 4200, 4500, 4100, 4800, 4600, 4320],
+                        borderColor: '#e53e3e',
+                        backgroundColor: 'rgba(229, 62, 62, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Utilidad',
+                        data: [5300, 5400, 4300, 6300, 7500, 7100, 8700, 10200, 8530],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de distribución de gastos
+        function initializeExpenseChart() {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            
+            expenseChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Materiales', 'Operativos', 'Nómina', 'Marketing', 'Mantenimiento'],
+                    datasets: [{
+                        data: [2800, 1650, 1800, 950, 750],
+                        backgroundColor: [
+                            '#667eea',
+                            '#38a169',
+                            '#dd6b20',
+                            '#e53e3e',
+                            '#805ad5'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+
+        // Cambiar período del gráfico
+        function changeChartPeriod(period) {
+            // Actualizar botones activos
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Aquí se actualizarían los datos del gráfico según el período
+            showNotification(`Vista cambiada a: ${period}`, 'info');
+        }
+
+        // Abrir modal de presupuesto
+        function openBudgetModal() {
+            document.getElementById('budgetModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            setDefaultDate();
+        }
+
+        // Cerrar modal de presupuesto
+        function closeBudgetModal() {
+            document.getElementById('budgetModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('budgetForm').reset();
+        }
+
+        // Actualizar flujo de caja
+        function updateCashFlow() {
+            showNotification('Flujo de caja actualizado', 'success');
+        }
+
+        // Exportar reporte financiero
+        function exportFinancialReport() {
+            const wb = XLSX.utils.book_new();
+            
+            // Resumen financiero
+            const summaryData = [
+                ['Concepto', 'Monto', 'Cambio'],
+                ['Ingresos Totales', '$67,450', '+15.2%'],
+                ['Gastos Totales', '$43,280', '+8.7%'],
+                ['Utilidad Neta', '$24,170', '+28.5%'],
+                ['Flujo de Caja', '$34,130', 'Positivo']
+            ];
+            
+            // Indicadores financieros
+            const metricsData = [
+                ['Indicador', 'Valor', 'Descripción'],
+                ['Margen de Utilidad', '35.8%', 'Porcentaje de ganancia sobre ingresos'],
+                ['ROI', '24.3%', 'Rentabilidad sobre la inversión'],
+                ['Punto de Equilibrio', '$28,500', 'Ventas mínimas para cubrir costos'],
+                ['Liquidez Corriente', '2.4', 'Capacidad para cubrir deudas'],
+                ['Rotación de Inventario', '4.2x', 'Veces que se renueva el inventario'],
+                ['Días de Cobranza', '18 días', 'Tiempo promedio de cobro']
+            ];
+            
+            // Flujo de caja
+            const cashFlowData = [
+                ['Concepto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+                ['Ventas de Productos', '$42,000', '$45,000', '$48,000', '$55,000'],
+                ['Servicios de Sublimación', '$18,500', '$20,000', '$22,000', '$25,000'],
+                ['Total Ingresos', '$60,500', '$65,000', '$70,000', '$80,000'],
+                ['Compra de Materiales', '$15,000', '$16,000', '$17,000', '$18,000'],
+                ['Gastos Operativos', '$8,500', '$8,500', '$8,500', '$9,000'],
+                ['Nómina', '$12,000', '$12,000', '$12,000', '$14,000'],
+                ['Total Egresos', '$35,500', '$36,500', '$37,500', '$41,000'],
+                ['Flujo Neto', '$25,000', '$28,500', '$32,500', '$39,000'],
+                ['Saldo Acumulado', '$59,130', '$87,630', '$120,130', '$159,130']
+            ];
+            
+            const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+            const wsMetrics = XLSX.utils.aoa_to_sheet(metricsData);
+            const wsCashFlow = XLSX.utils.aoa_to_sheet(cashFlowData);
+            
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen Financiero');
+            XLSX.utils.book_append_sheet(wb, wsMetrics, 'Indicadores');
+            XLSX.utils.book_append_sheet(wb, wsCashFlow, 'Flujo de Caja');
+            
+            const date = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `reporte_financiero_${date}.xlsx`);
+            
+            showNotification('Reporte financiero exportado exitosamente', 'success');
+        }
+
+        // Manejar envío del formulario de presupuesto
+        document.getElementById('budgetForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                category: document.getElementById('budgetCategory').value,
+                period: document.getElementById('budgetPeriod').value,
+                amount: document.getElementById('budgetAmount').value,
+                startDate: document.getElementById('budgetStartDate').value,
+                description: document.getElementById('budgetDescription').value
+            };
+
+            console.log('Nuevo presupuesto:', formData);
+            
+            closeBudgetModal();
+            showNotification('Presupuesto creado exitosamente', 'success');
+        });
+
+        // Mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 3000;
+                opacity: 0;
+                transform: translateX(100%);
+                transition: all 0.3s ease;
+            `;
+
+            const colors = {
+                'success': '#38a169',
+                'error': '#e53e3e',
+                'warning': '#dd6b20',
+                'info': '#3182ce'
+            };
+
+            notification.style.background = colors[type] || colors.info;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('budgetModal');
+            if (e.target === modal) {
+                closeBudgetModal();
+            }
+        });
+
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeBudgetModal();
+            }
+        });
+    </script>
+</body>
+</html>

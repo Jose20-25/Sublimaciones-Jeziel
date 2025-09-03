@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - Sublimaciones Jeziel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS para generar archivos Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    
+    <!-- Configuración de Firebase -->
+    <script src="../js/firebase-config.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-logo-icon img {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        .sidebar-logo-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #a0aec0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-left-color: #667eea;
+        }
+
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+        }
+
+        .nav-section {
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+
+        .nav-section-title {
+            color: #718096;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        /* Main Content Styles */
+        .main-layout {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #2f855a 0%, #276749 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 161, 105, 0.3);
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        /* Search and Filters */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Inventory Table */
+        .inventory-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .inventory-table th {
+            background: #f7fafc;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .inventory-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .inventory-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .product-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .product-image {
+            width: 40px;
+            height: 40px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #718096;
+        }
+
+        .product-details h4 {
+            color: #2d3748;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .product-details p {
+            color: #718096;
+            font-size: 0.8rem;
+        }
+
+        .stock-status {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .stock-high {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .stock-medium {
+            background: #fef5e7;
+            color: #c05621;
+        }
+
+        .stock-low {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #e6fffa;
+            color: #234e52;
+        }
+
+        .btn-edit:hover {
+            background: #b2f5ea;
+        }
+
+        .btn-delete {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .btn-delete:hover {
+            background: #feb2b2;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #718096;
+            cursor: pointer;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+
+            .main-layout {
+                margin-left: 0;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .inventory-table {
+                font-size: 0.8rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">
+                    <img src="../logo/logo.jpg" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-print\'></i>';">
+                </div>
+                <div class="sidebar-logo-text">Sublimaciones Jeziel</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="../index.html" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard
+            </a>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Gestión Principal</div>
+                <a href="#" class="nav-item" onclick="navigateToModule('ventas')">
+                    <i class="fas fa-shopping-cart"></i>
+                    Ventas
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('compras')">
+                    <i class="fas fa-shopping-bag"></i>
+                    Compras
+                </a>
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-boxes"></i>
+                    Inventario
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('produccion')">
+                    <i class="fas fa-industry"></i>
+                    Producción
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('clientes')">
+                    <i class="fas fa-users"></i>
+                    Clientes
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('proveedores')">
+                    <i class="fas fa-truck"></i>
+                    Proveedores
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Facturación</div>
+                <a href="#" class="nav-item" onclick="navigateToModule('facturas')">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Facturas
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('contabilidad')">
+                    <i class="fas fa-calculator"></i>
+                    Contabilidad
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('finanzas')">
+                    <i class="fas fa-chart-line"></i>
+                    Finanzas
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Administración</div>
+                <a href="#" class="nav-item" onclick="navigateToModule('reportes')">
+                    <i class="fas fa-chart-bar"></i>
+                    Reportes
+                </a>
+                <a href="#" class="nav-item" onclick="navigateToModule('configuracion')">
+                    <i class="fas fa-cog"></i>
+                    Configuración
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Soporte</div>
+                <a href="#" class="nav-item" onclick="navigateToModule('soporte')">
+                    <i class="fas fa-life-ring"></i>
+                    Ayuda
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-layout">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header-title">Gestión de Inventario</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="exportInventory()">
+                    <i class="fas fa-download"></i>
+                    Exportar CSV
+                </button>
+                <button class="btn btn-info" onclick="generateExcelReport()">
+                    <i class="fas fa-file-excel"></i>
+                    Generar Reporte
+                </button>
+                <button class="btn btn-primary" onclick="openAddProductModal()">
+                    <i class="fas fa-plus"></i>
+                    Nuevo Producto
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="content">
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="stat-value">342</div>
+                    <div class="stat-label">Unidades en Stock</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-value">23</div>
+                    <div class="stat-label">Stock Bajo</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-value">S/ 18,850</div>
+                    <div class="stat-label">Valor Inventario</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <div class="stat-value">45</div>
+                    <div class="stat-label">Movimientos Hoy</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">Categorías</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="filters-grid">
+                    <div class="form-group">
+                        <label class="form-label">Buscar producto</label>
+                        <input type="text" class="form-input" placeholder="Nombre, código o descripción..." id="searchInput" onkeyup="filterTable()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-input" id="categoryFilter" onchange="filterTable()">
+                            <option value="">Todas</option>
+                            <option value="Textil">Textil</option>
+                            <option value="Aluminio">Aluminio</option>
+                            <option value="MDF">MDF</option>
+                            <option value="Ceramica">Cerámica</option>
+                            <option value="Vidrio">Vidrio</option>
+                            <option value="Neopreno">Neopreno</option>
+                            <option value="Acrilico">Acrílico</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado Stock</label>
+                        <select class="form-input" id="stockFilter" onchange="filterTable()">
+                            <option value="">Todos</option>
+                            <option value="high">Stock Alto</option>
+                            <option value="medium">Stock Medio</option>
+                            <option value="low">Stock Bajo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ordenar por</label>
+                        <select class="form-input" id="sortFilter" onchange="sortTable()">
+                            <option value="code">Código</option>
+                            <option value="name">Nombre</option>
+                            <option value="category">Categoría</option>
+                            <option value="stock">Stock</option>
+                            <option value="profitPercent">% Ganancia</option>
+                            <option value="costPrice">Precio Compra</option>
+                            <option value="salePrice">Precio Venta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Proveedor</label>
+                        <select class="form-input" id="supplierFilter" onchange="filterTable()">
+                            <option value="">Todos</option>
+                            <option value="Proveedor Textil S.A.">Proveedor Textil S.A.</option>
+                            <option value="Metales y Aluminios">Metales y Aluminios</option>
+                            <option value="Maderas MDF Corp">Maderas MDF Corp</option>
+                            <option value="Cerámicas Industriales">Cerámicas Industriales</option>
+                            <option value="Cristales y Vidrios">Cristales y Vidrios</option>
+                            <option value="Neopreno Supply">Neopreno Supply</option>
+                            <option value="Acrílicos Premium">Acrílicos Premium</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times"></i>
+                        Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inventory Table -->
+            <div class="inventory-table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Lista de Productos</h3>
+                </div>
+                <table class="inventory-table" id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th onclick="setSortAndUpdate('code')" style="cursor: pointer;">
+                                Código <i class="fas fa-sort-up" style="color: #667eea;"></i>
+                            </th>
+                            <th onclick="setSortAndUpdate('name')" style="cursor: pointer;">
+                                Producto <i class="fas fa-sort" style="opacity: 0.5;"></i>
+                            </th>
+                            <th onclick="setSortAndUpdate('category')" style="cursor: pointer;">
+                                Categoría <i class="fas fa-sort" style="opacity: 0.5;"></i>
+                            </th>
+                            <th onclick="setSortAndUpdate('costPrice')" style="cursor: pointer;">
+                                Precio Compra <i class="fas fa-sort" style="opacity: 0.5;"></i>
+                            </th>
+                            <th onclick="setSortAndUpdate('salePrice')" style="cursor: pointer;">
+                                Precio de Venta <i class="fas fa-sort" style="opacity: 0.5;"></i>
+                            </th>
+                            <th onclick="setSortAndUpdate('profitPercent')" style="cursor: pointer;">
+                                % Ganancia <i class="fas fa-sort" style="opacity: 0.5;"></i>
+                            </th>
+                            <th>Ganancia $</th>
+                            <th onclick="setSortAndUpdate('stock')" style="cursor: pointer;">
+                                Stock Actual <i class="fas fa-sort" style="opacity: 0.5;"></i>
+                            </th>
+                            <th>Stock Mínimo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                        <!-- Los datos se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Agregar/Editar Producto -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Nuevo Producto</h3>
+            </div>
+            <form class="modal-form" id="productForm">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Producto</label>
+                    <input type="text" class="form-input" id="productName" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-input" id="productCategory" required onchange="generateProductCode()">
+                            <option value="">Seleccionar categoría</option>
+                            <option value="Textil">Textil</option>
+                            <option value="Aluminio">Aluminio</option>
+                            <option value="MDF">MDF</option>
+                            <option value="Ceramica">Cerámica</option>
+                            <option value="Vidrio">Vidrio</option>
+                            <option value="Neopreno">Neopreno</option>
+                            <option value="Acrilico">Acrílico</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Código (Automático)</label>
+                        <input type="text" class="form-input" id="productCode" readonly style="background: #f7fafc;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Precio de Compra</label>
+                        <input type="number" class="form-input" id="productCostPrice" step="0.01" min="0" required onchange="calculateProfit()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Precio de Venta</label>
+                        <input type="number" class="form-input" id="productSalePrice" step="0.01" min="0" required onchange="calculateProfit()">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">% de Ganancia</label>
+                        <input type="number" class="form-input" id="productProfitPercent" step="0.01" readonly style="background: #f7fafc;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ganancia Adquirida ($)</label>
+                        <input type="number" class="form-input" id="productProfitAmount" step="0.01" readonly style="background: #f7fafc;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Stock Actual</label>
+                        <input type="number" class="form-input" id="productStock" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stock Mínimo</label>
+                        <input type="number" class="form-input" id="productMinStock" min="0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Proveedor</label>
+                    <select class="form-input" id="productSupplier" required>
+                        <option value="">Seleccionar proveedor</option>
+                        <option value="Proveedor Textil S.A.">Proveedor Textil S.A.</option>
+                        <option value="Metales y Aluminios">Metales y Aluminios</option>
+                        <option value="Maderas MDF Corp">Maderas MDF Corp</option>
+                        <option value="Cerámicas Industriales">Cerámicas Industriales</option>
+                        <option value="Cristales y Vidrios">Cristales y Vidrios</option>
+                        <option value="Neopreno Supply">Neopreno Supply</option>
+                        <option value="Acrílicos Premium">Acrílicos Premium</option>
+                        <option value="Distribuidor General">Distribuidor General</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-input" id="productDescription" rows="3" placeholder="Descripción del producto..."></textarea>
+                </div>
+            </form>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" form="productForm">Guardar Producto</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función de navegación
+        function navigateToModule(module) {
+            const routes = {
+                'ventas': 'ventas.html',
+                'compras': 'compras.html',
+                'inventario': 'inventario.html',
+                'produccion': 'produccion.html',
+                'clientes': 'clientes.html',
+                'proveedores': 'proveedores.html',
+                'facturas': 'facturas.html',
+                'contabilidad': 'contabilidad.html',
+                'finanzas': 'finanzas.html',
+                'reportes': 'reportes.html',
+                'configuracion': 'configuracion.html',
+                'soporte': 'soporte.html'
+            };
+            
+            if (routes[module]) {
+                window.location.href = routes[module];
+            }
+        }
+
+        // Funciones para persistencia de datos con Firebase
+        async function saveDataToLocalStorage() {
+            try {
+                // Guardar en localStorage como respaldo
+                localStorage.setItem('inventoryData', JSON.stringify(inventoryData));
+                localStorage.setItem('categoryCounters', JSON.stringify(categoryCounters));
+                console.log('Datos guardados en localStorage');
+                
+                // Guardar en Firebase si está disponible
+                if (window.saveToFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                    try {
+                        await window.saveToFirebase('inventario', {
+                            inventoryData: inventoryData,
+                            categoryCounters: categoryCounters,
+                            lastUpdated: new Date().toISOString()
+                        });
+                        console.log('🔥 Datos de inventario sincronizados con Firebase');
+                        showSyncNotification('✅ Inventario sincronizado con la nube');
+                    } catch (error) {
+                        console.error('❌ Error al sincronizar con Firebase:', error);
+                        showSyncNotification('⚠️ Error en sincronización - usando datos locales');
+                    }
+                }
+                
+                // Notificar al dashboard sobre la actualización
+                notifyDashboardUpdate();
+            } catch (error) {
+                console.error('Error al guardar datos:', error);
+            }
+        }
+
+        // Función para notificar actualizaciones al dashboard
+        function notifyDashboardUpdate() {
+            try {
+                // Intentar acceder a la función global del dashboard
+                if (window.parent && window.parent.notifyDashboardUpdate) {
+                    window.parent.notifyDashboardUpdate();
+                } else if (window.opener && window.opener.notifyDashboardUpdate) {
+                    window.opener.notifyDashboardUpdate();
+                } else if (window.top && window.top.notifyDashboardUpdate) {
+                    window.top.notifyDashboardUpdate();
+                }
+                
+                // También disparar evento en esta ventana por si acaso
+                window.dispatchEvent(new CustomEvent('dashboardUpdate'));
+                
+                // Intentar actualizar a través de localStorage trigger
+                localStorage.setItem('dashboardLastUpdate', Date.now().toString());
+            } catch (error) {
+                console.log('No se pudo notificar al dashboard:', error);
+            }
+        }
+
+        async function loadDataFromLocalStorage() {
+            try {
+                console.log('🔥 Intentando cargar datos desde Firebase...');
+                
+                // Intentar cargar desde Firebase primero
+                if (window.loadFromFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                    try {
+                        const firebaseData = await window.loadFromFirebase('inventario');
+                        if (firebaseData && firebaseData.inventoryData) {
+                            inventoryData = normalizeProductData(firebaseData.inventoryData);
+                            categoryCounters = firebaseData.categoryCounters || categoryCounters;
+                            console.log('🔥 Datos de inventario cargados desde Firebase:', inventoryData.length, 'productos');
+                            showSyncNotification('✅ Inventario sincronizado desde la nube');
+                            return;
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ No se pudieron cargar datos desde Firebase:', error);
+                    }
+                }
+                
+                // Fallback a localStorage
+                const savedInventoryData = localStorage.getItem('inventoryData');
+                const savedCategoryCounters = localStorage.getItem('categoryCounters');
+                
+                console.log('📁 Intentando cargar datos desde localStorage...');
+                console.log('Datos de inventario encontrados:', !!savedInventoryData);
+                console.log('Contadores encontrados:', !!savedCategoryCounters);
+                
+                if (savedInventoryData) {
+                    const parsedData = JSON.parse(savedInventoryData);
+                    if (Array.isArray(parsedData) && parsedData.length > 0) {
+                        inventoryData = normalizeProductData(parsedData);
+                        console.log('Datos de inventario cargados desde localStorage:', inventoryData.length, 'productos');
+                    } else {
+                        console.log('Datos guardados vacíos o inválidos');
+                    }
+                } else {
+                    console.log('No se encontraron datos guardados en localStorage');
+                }
+                
+                if (savedCategoryCounters) {
+                    categoryCounters = JSON.parse(savedCategoryCounters);
+                    console.log('Contadores de categoría cargados desde localStorage');
+                } else {
+                    console.log('No se encontraron contadores guardados');
+                }
+                
+                // Si tenemos datos pero no contadores, calcularlos
+                if (inventoryData.length > 0 && !savedCategoryCounters) {
+                    calculateCategoryCounters();
+                }
+                
+            } catch (error) {
+                console.error('Error al cargar datos desde localStorage:', error);
+                // En caso de error, limpiar variables
+                inventoryData = [];
+                categoryCounters = {
+                    'Textil': 2,
+                    'Aluminio': 2,
+                    'MDF': 2,
+                    'Ceramica': 1,
+                    'Vidrio': 1,
+                    'Neopreno': 1,
+                    'Acrilico': 1
+                };
+            }
+        }
+
+        function calculateCategoryCounters() {
+            // Reiniciar contadores
+            categoryCounters = {
+                'Textil': 0,
+                'Aluminio': 0,
+                'MDF': 0,
+                'Ceramica': 0,
+                'Vidrio': 0,
+                'Neopreno': 0,
+                'Acrilico': 0
+            };
+            
+            // Mapear categorías a prefijos
+            const categoryPrefixes = {
+                'Textil': 'TEX',
+                'Aluminio': 'ALU',
+                'MDF': 'MDF',
+                'Ceramica': 'CER',
+                'Vidrio': 'VID',
+                'Neopreno': 'NEO',
+                'Acrilico': 'ACR'
+            };
+            
+            // Contar productos existentes por categoría para encontrar el número más alto
+            inventoryData.forEach(product => {
+                for (let category in categoryPrefixes) {
+                    if (product.code && product.code.startsWith(categoryPrefixes[category] + '-')) {
+                        const codeNumber = parseInt(product.code.split('-')[1]);
+                        if (!isNaN(codeNumber) && codeNumber > categoryCounters[category]) {
+                            categoryCounters[category] = codeNumber;
+                        }
+                    }
+                }
+            });
+            
+            console.log('Contadores calculados:', categoryCounters);
+        }
+
+        // Función para normalizar datos de productos
+        function normalizeProductData(products) {
+            return products.map(product => ({
+                id: product.id || Date.now(),
+                name: product.name || 'Sin nombre',
+                code: product.code || 'N/A',
+                category: product.category || 'Otros',
+                stock: parseInt(product.stock) || 0,
+                minStock: parseInt(product.minStock) || 0,
+                costPrice: parseFloat(product.costPrice) || 0,
+                salePrice: parseFloat(product.salePrice) || 0,
+                profitPercent: parseFloat(product.profitPercent) || 0,
+                profitAmount: parseFloat(product.profitAmount) || 0,
+                supplier: product.supplier || 'Sin proveedor',
+                description: product.description || 'Sin descripción'
+            }));
+        }
+
+        // Función para mostrar notificaciones de sincronización
+        function showSyncNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: linear-gradient(135deg, #48bb78, #38a169);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1002;
+                max-width: 280px;
+                font-size: 0.85rem;
+                animation: slideInRight 0.5s ease;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-cloud"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remover notificación después de 3 segundos
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+            
+            // Agregar animaciones CSS si no existen
+            if (!document.getElementById('sync-animations')) {
+                const style = document.createElement('style');
+                style.id = 'sync-animations';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOutRight {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        function loadDefaultData() {
+            inventoryData = [
+                {
+                    id: 7,
+                    name: "Llavero Acrílico",
+                    code: "ACR-001",
+                    category: "Acrilico",
+                    stock: 75,
+                    minStock: 25,
+                    costPrice: 3.20,
+                    salePrice: 16.00,
+                    profitPercent: 429.41,
+                    profitAmount: 3.65,
+                    supplier: "Acrílicos Premium",
+                    description: "Llavero acrílico transparente personalizable"
+                },
+                {
+                    id: 2,
+                    name: "Taza de Aluminio",
+                    code: "ALU-001",
+                    category: "Aluminio",
+                    stock: 25,
+                    minStock: 15,
+                    costPrice: 15.50,
+                    salePrice: 42.00,
+                profitPercent: 185.71,
+                profitAmount: 7.80,
+                supplier: "Metales y Aluminios",
+                description: "Taza de aluminio con recubrimiento sublimable"
+            },
+            {
+                id: 9,
+                name: "Botella Aluminio Sport",
+                code: "ALU-002",
+                category: "Aluminio",
+                stock: 15,
+                minStock: 20,
+                costPrice: 28.50,
+                salePrice: 78.00,
+                profitPercent: 182.05,
+                profitAmount: 14.20,
+                supplier: "Metales y Aluminios",
+                description: "Botella deportiva de aluminio 600ml"
+            },
+            {
+                id: 4,
+                name: "Taza Cerámica 11oz",
+                code: "CER-001",
+                category: "Ceramica",
+                stock: 150,
+                minStock: 50,
+                costPrice: 9.80,
+                salePrice: 35.00,
+                profitPercent: 263.64,
+                profitAmount: 7.25,
+                supplier: "Cerámicas Industriales",
+                description: "Taza cerámica blanca para sublimación"
+            },
+            {
+                id: 3,
+                name: "Portarretrato MDF",
+                code: "MDF-001",
+                category: "MDF",
+                stock: 8,
+                minStock: 12,
+                costPrice: 12.50,
+                salePrice: 52.00,
+                profitPercent: 328.57,
+                profitAmount: 11.50,
+                supplier: "Maderas MDF Corp",
+                description: "Marco portarretrato MDF 20x25cm"
+            },
+            {
+                id: 10,
+                name: "Reloj MDF Redondo",
+                code: "MDF-002",
+                category: "MDF",
+                stock: 5,
+                minStock: 10,
+                costPrice: 18.50,
+                salePrice: 85.00,
+                profitPercent: 346.43,
+                profitAmount: 19.40,
+                supplier: "Maderas MDF Corp",
+                description: "Reloj de pared MDF redondo 30cm"
+            },
+            {
+                id: 6,
+                name: "Mousepad Neopreno",
+                code: "NEO-001",
+                category: "Neopreno",
+                stock: 200,
+                minStock: 100,
+                costPrice: 5.50,
+                salePrice: 25.00,
+                profitPercent: 400.00,
+                profitAmount: 6.00,
+                supplier: "Neopreno Supply",
+                description: "Mousepad de neopreno antideslizante"
+            },
+            {
+                id: 1,
+                name: "Camiseta Blanca Premium",
+                code: "TEX-001",
+                category: "Textil",
+                stock: 45,
+                minStock: 10,
+                costPrice: 22.00,
+                salePrice: 58.00,
+                profitPercent: 111.76,
+                profitAmount: 9.50,
+                supplier: "Proveedor Textil S.A.",
+                description: "Camiseta 100% algodón para sublimación"
+            },
+            {
+                id: 8,
+                name: "Gorra Textil Bordada",
+                code: "TEX-002",
+                category: "Textil",
+                stock: 35,
+                minStock: 15,
+                costPrice: 18.50,
+                salePrice: 55.00,
+                profitPercent: 166.13,
+                profitAmount: 10.30,
+                supplier: "Proveedor Textil S.A.",
+                description: "Gorra de algodón con panel para sublimación"
+            },
+            {
+                id: 5,
+                name: "Vaso de Vidrio",
+                code: "VID-001",
+                category: "Vidrio",
+                stock: 30,
+                minStock: 20,
+                costPrice: 12.50,
+                salePrice: 45.00,
+                profitPercent: 268.42,
+                profitAmount: 10.20,
+                supplier: "Cristales y Vidrios",
+                    profitPercent: 268.42,
+                    profitAmount: 10.20,
+                    supplier: "Cristales y Vidrios",
+                    description: "Vaso de vidrio templado sublimable"
+                }
+            ];
+            
+            console.log('Datos por defecto cargados');
+        }
+
+        // Variables globales
+        let inventoryData = [];
+        let currentEditId = null;
+        let categoryCounters = {
+            'Textil': 2,
+            'Aluminio': 2,
+            'MDF': 2,
+            'Ceramica': 1,
+            'Vidrio': 1,
+            'Neopreno': 1,
+            'Acrilico': 1
+        };
+
+        // Función para generar código automático según categoría
+        function generateProductCode() {
+            const category = document.getElementById('productCategory').value;
+            if (!category) return;
+
+            const categoryPrefixes = {
+                'Textil': 'TEX',
+                'Aluminio': 'ALU',
+                'MDF': 'MDF',
+                'Ceramica': 'CER',
+                'Vidrio': 'VID',
+                'Neopreno': 'NEO',
+                'Acrilico': 'ACR'
+            };
+
+            // Si estamos editando, mantener el código existente a menos que se cambie la categoría
+            if (currentEditId) {
+                const currentCode = document.getElementById('productCode').value;
+                const currentPrefix = currentCode.split('-')[0];
+                
+                // Solo generar nuevo código si la categoría cambió
+                if (currentPrefix !== categoryPrefixes[category]) {
+                    generateNewCode(category, categoryPrefixes);
+                }
+                return;
+            }
+
+            // Para productos nuevos, siempre generar código
+            generateNewCode(category, categoryPrefixes);
+        }
+
+        function generateNewCode(category, categoryPrefixes) {
+            const prefix = categoryPrefixes[category];
+            
+            // Buscar el siguiente número disponible
+            let nextNumber = 1;
+            let codeExists = true;
+            
+            while (codeExists) {
+                const testCode = `${prefix}-${nextNumber.toString().padStart(3, '0')}`;
+                codeExists = inventoryData.some(p => p.code === testCode && p.id !== currentEditId);
+                if (!codeExists) {
+                    document.getElementById('productCode').value = testCode;
+                    // Actualizar contador si es necesario
+                    if (nextNumber > categoryCounters[category]) {
+                        categoryCounters[category] = nextNumber;
+                    }
+                    break;
+                }
+                nextNumber++;
+            }
+        }
+
+        // Función para calcular ganancia automáticamente
+        function calculateProfit() {
+            const costPrice = parseFloat(document.getElementById('productCostPrice').value) || 0;
+            const salePrice = parseFloat(document.getElementById('productSalePrice').value) || 0;
+
+            if (costPrice > 0 && salePrice > 0) {
+                const profitAmount = salePrice - costPrice;
+                const profitPercent = (profitAmount / costPrice) * 100;
+
+                document.getElementById('productProfitAmount').value = profitAmount.toFixed(2);
+                document.getElementById('productProfitPercent').value = profitPercent.toFixed(2);
+            } else {
+                document.getElementById('productProfitAmount').value = '';
+                document.getElementById('productProfitPercent').value = '';
+            }
+        }
+
+        // Función para generar código automático según categoría
+        function generateProductCode() {
+            const category = document.getElementById('productCategory').value;
+            if (!category) return;
+
+            const categoryPrefixes = {
+                'Textil': 'TEX',
+                'Aluminio': 'ALU',
+                'MDF': 'MDF',
+                'Ceramica': 'CER',
+                'Vidrio': 'VID',
+                'Neopreno': 'NEO',
+                'Acrilico': 'ACR'
+            };
+
+            // Si estamos editando, mantener el código existente
+            if (currentEditId) return;
+
+            const prefix = categoryPrefixes[category];
+            const nextNumber = categoryCounters[category] + 1;
+            const code = `${prefix}-${nextNumber.toString().padStart(3, '0')}`;
+            
+            document.getElementById('productCode').value = code;
+        }
+
+        // Función para calcular ganancia automáticamente
+        function calculateProfit() {
+            const costPrice = parseFloat(document.getElementById('productCostPrice').value) || 0;
+            const salePrice = parseFloat(document.getElementById('productSalePrice').value) || 0;
+
+            if (costPrice > 0 && salePrice > 0) {
+                const profitAmount = salePrice - costPrice;
+                const profitPercent = (profitAmount / costPrice) * 100;
+
+                document.getElementById('productProfitAmount').value = profitAmount.toFixed(2);
+                document.getElementById('productProfitPercent').value = profitPercent.toFixed(2);
+            } else {
+                document.getElementById('productProfitAmount').value = '';
+                document.getElementById('productProfitPercent').value = '';
+            }
+        }
+
+        // Función para determinar el estado del stock
+        function getStockStatus(current, minimum) {
+            const ratio = current / minimum;
+            if (ratio >= 2) return { class: 'stock-high', text: 'Alto' };
+            if (ratio >= 1) return { class: 'stock-medium', text: 'Medio' };
+            return { class: 'stock-low', text: 'Bajo' };
+        }
+
+        // Función para renderizar la tabla
+        function renderTable(data = inventoryData) {
+            console.log('Renderizando tabla con', data.length, 'productos');
+            const tbody = document.getElementById('inventoryTableBody');
+            
+            if (!tbody) {
+                console.error('No se encontró el elemento inventoryTableBody');
+                return;
+            }
+            
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 20px; color: #666;">No hay productos en el inventario</td></tr>';
+                return;
+            }
+
+            data.forEach(product => {
+                // Validar y asegurar que todas las propiedades numéricas existan
+                const safeProduct = {
+                    ...product,
+                    costPrice: product.costPrice || 0,
+                    salePrice: product.salePrice || 0,
+                    profitPercent: product.profitPercent || 0,
+                    profitAmount: product.profitAmount || 0,
+                    stock: product.stock || 0,
+                    minStock: product.minStock || 0
+                };
+                
+                const stockStatus = getStockStatus(safeProduct.stock, safeProduct.minStock);
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td><strong>${safeProduct.code || 'N/A'}</strong></td>
+                    <td>
+                        <div class="product-info">
+                            <div class="product-image">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div class="product-details">
+                                <h4>${safeProduct.name || 'Sin nombre'}</h4>
+                                <p>${safeProduct.description || 'Sin descripción'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${safeProduct.category || 'N/A'}</td>
+                    <td>$${safeProduct.costPrice.toFixed(2)}</td>
+                    <td>$${safeProduct.salePrice.toFixed(2)}</td>
+                    <td><strong style="color: #38a169;">${safeProduct.profitPercent.toFixed(1)}%</strong></td>
+                    <td><strong style="color: #38a169;">$${safeProduct.profitAmount.toFixed(2)}</strong></td>
+                    <td><strong>${safeProduct.stock}</strong></td>
+                    <td>${safeProduct.minStock}</td>
+                    <td>
+                        <span class="stock-status ${stockStatus.class}">
+                            ${stockStatus.text}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-small btn-edit" onclick="editProduct(${safeProduct.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-small btn-delete" onclick="deleteProduct(${safeProduct.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Función para filtrar la tabla
+        function filterTable() {
+            sortTable(); // Llamar a sortTable que ya maneja filtros y ordenamiento
+        }
+
+        // Función para limpiar filtros
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('stockFilter').value = '';
+            document.getElementById('supplierFilter').value = '';
+            document.getElementById('sortFilter').value = 'code';
+            renderTable();
+        }
+
+        // Función para ordenar la tabla
+        function sortTable() {
+            const sortBy = document.getElementById('sortFilter').value;
+            
+            // Primero aplicar filtros existentes
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const stockFilter = document.getElementById('stockFilter').value;
+            const supplierFilter = document.getElementById('supplierFilter').value;
+
+            let filteredData = inventoryData.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm) ||
+                                    product.code.toLowerCase().includes(searchTerm) ||
+                                    product.description.toLowerCase().includes(searchTerm);
+                
+                const matchesCategory = !categoryFilter || product.category === categoryFilter;
+                const matchesSupplier = !supplierFilter || product.supplier === supplierFilter;
+                
+                let matchesStock = true;
+                if (stockFilter) {
+                    const stockStatus = getStockStatus(product.stock, product.minStock);
+                    matchesStock = stockStatus.class.includes(stockFilter);
+                }
+
+                return matchesSearch && matchesCategory && matchesStock && matchesSupplier;
+            });
+
+            // Luego ordenar los datos filtrados
+            filteredData.sort((a, b) => {
+                switch(sortBy) {
+                    case 'code':
+                        return a.code.localeCompare(b.code);
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'category':
+                        return a.category.localeCompare(b.category);
+                    case 'stock':
+                        return b.stock - a.stock; // Mayor a menor
+                    case 'profitPercent':
+                        return b.profitPercent - a.profitPercent; // Mayor a menor
+                    case 'costPrice':
+                        return a.costPrice - b.costPrice; // Menor a mayor
+                    case 'salePrice':
+                        return a.salePrice - b.salePrice; // Menor a mayor
+                    default:
+                        return a.code.localeCompare(b.code);
+                }
+            });
+
+            renderTable(filteredData);
+        }
+
+        // Función para cambiar ordenamiento desde encabezados
+        function setSortAndUpdate(field) {
+            document.getElementById('sortFilter').value = field;
+            updateSortIcons(field);
+            sortTable();
+        }
+
+        // Función para actualizar iconos de ordenamiento
+        function updateSortIcons(activeField) {
+            // Resetear todos los iconos
+            document.querySelectorAll('th i').forEach(icon => {
+                icon.className = 'fas fa-sort';
+                icon.style.opacity = '0.5';
+                icon.style.color = '';
+            });
+
+            // Destacar el campo activo - nuevas posiciones de columnas
+            const headers = {
+                'code': 0,          // Código
+                'name': 1,          // Producto  
+                'category': 2,      // Categoría
+                'costPrice': 3,     // Precio Compra
+                'salePrice': 4,     // Precio de Venta
+                'profitPercent': 5, // % Ganancia
+                'stock': 7          // Stock Actual
+            };
+
+            if (headers[activeField] !== undefined) {
+                const headerRow = document.querySelector('.inventory-table thead tr');
+                const activeIcon = headerRow.children[headers[activeField]].querySelector('i');
+                if (activeIcon) {
+                    activeIcon.className = 'fas fa-sort-up';
+                    activeIcon.style.opacity = '1';
+                    activeIcon.style.color = '#667eea';
+                }
+            }
+        }
+
+        // Función para abrir modal de nuevo producto
+        function openAddProductModal() {
+            currentEditId = null;
+            
+            // Restablecer completamente el formulario
+            document.getElementById('productForm').reset();
+            
+            // Configurar el modal para nuevo producto
+            document.getElementById('modalTitle').textContent = 'Nuevo Producto';
+            document.getElementById('submitBtn').textContent = 'Agregar Producto';
+            
+            // Limpiar campos específicos
+            document.getElementById('productCode').value = '';
+            document.getElementById('productProfitPercent').value = '';
+            document.getElementById('productProfitAmount').value = '';
+            
+            // Asegurar que el campo de código no esté en solo lectura
+            document.getElementById('productCode').readOnly = false;
+            
+            // Mostrar el modal
+            document.getElementById('productModal').style.display = 'block';
+            
+            console.log('Modal abierto para nuevo producto');
+        }
+
+        // Función para editar producto
+        function editProduct(id) {
+            const product = inventoryData.find(p => p.id === id);
+            if (!product) {
+                alert('Error: No se pudo encontrar el producto a editar.');
+                return;
+            }
+
+            currentEditId = id;
+            
+            document.getElementById('modalTitle').textContent = 'Editar Producto';
+            document.getElementById('submitBtn').textContent = 'Actualizar Producto';
+            
+            // Cargar todos los datos del producto en el formulario
+            document.getElementById('productName').value = product.name || '';
+            document.getElementById('productCode').value = product.code || '';
+            document.getElementById('productCategory').value = product.category || '';
+            document.getElementById('productStock').value = product.stock || 0;
+            document.getElementById('productMinStock').value = product.minStock || 0;
+            document.getElementById('productCostPrice').value = product.costPrice || 0;
+            document.getElementById('productSalePrice').value = product.salePrice || 0;
+            document.getElementById('productProfitPercent').value = (product.profitPercent || 0).toFixed(2);
+            document.getElementById('productProfitAmount').value = (product.profitAmount || 0).toFixed(2);
+            document.getElementById('productSupplier').value = product.supplier || '';
+            document.getElementById('productDescription').value = product.description || '';
+            
+            // Deshabilitar el campo de código durante la edición para evitar duplicados
+            document.getElementById('productCode').readOnly = true;
+            
+            document.getElementById('productModal').style.display = 'block';
+            
+            console.log('Editando producto:', product);
+        }
+
+        // Función para eliminar producto
+        function deleteProduct(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+                inventoryData = inventoryData.filter(p => p.id !== id);
+                renderTable();
+                updateStats();
+                
+                // Guardar datos en localStorage
+                saveDataToLocalStorage();
+                
+                alert('Producto eliminado exitosamente.');
+            }
+        }
+
+        // Función para cerrar modal
+        function closeModal() {
+            document.getElementById('productModal').style.display = 'none';
+            
+            // Restablecer el formulario y el estado
+            document.getElementById('productForm').reset();
+            currentEditId = null;
+            
+            // Restablecer el título y botón del modal
+            document.getElementById('modalTitle').textContent = 'Agregar Producto';
+            document.getElementById('submitBtn').textContent = 'Agregar Producto';
+            
+            // Habilitar nuevamente el campo de código
+            document.getElementById('productCode').readOnly = false;
+            
+            // Limpiar los campos calculados
+            document.getElementById('productProfitPercent').value = '';
+            document.getElementById('productProfitAmount').value = '';
+            
+            console.log('Modal cerrado y formulario restablecido');
+        }
+
+        // Función para actualizar estadísticas
+        function updateStats() {
+            const totalProductsInStock = inventoryData.reduce((sum, p) => sum + p.stock, 0);
+            const lowStockProducts = inventoryData.filter(p => p.stock <= p.minStock).length;
+            const totalValue = inventoryData.reduce((sum, p) => sum + (p.stock * p.costPrice), 0);
+            
+            document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = totalProductsInStock.toLocaleString();
+            document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = lowStockProducts;
+            document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = `$${totalValue.toLocaleString()}`;
+        }
+
+        // Función para exportar inventario
+        // Función para exportar inventario
+        function exportInventory() {
+            // Crear CSV con el nuevo orden de columnas
+            const headers = ['Código', 'Nombre', 'Categoría', 'Precio Compra', 'Precio de Venta', '% Ganancia', 'Ganancia $', 'Stock Actual', 'Stock Mínimo', 'Estado'];
+            const csvContent = [
+                headers.join(','),
+                ...inventoryData.map(p => {
+                    const stockStatus = getStockStatus(p.stock, p.minStock);
+                    return [
+                        p.code,
+                        `"${p.name}"`,
+                        p.category,
+                        p.costPrice,
+                        p.salePrice,
+                        p.profitPercent.toFixed(2),
+                        p.profitAmount.toFixed(2),
+                        p.stock,
+                        p.minStock,
+                        stockStatus.text
+                    ].join(',');
+                })
+            ].join('\n');
+
+            // Descargar archivo
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'inventario_sublimaciones_jeziel.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Función para generar reporte profesional en Excel
+        function generateExcelReport() {
+            try {
+                // Crear un nuevo libro de trabajo
+                const wb = XLSX.utils.book_new();
+                
+                // === HOJA 1: REPORTE PRINCIPAL ===
+                const mainSheetData = [];
+                
+                // Encabezado del reporte (filas 1-6)
+                mainSheetData.push(['SUBLIMACIONES JEZIEL']);
+                mainSheetData.push(['REPORTE DE INVENTARIO DETALLADO']);
+                mainSheetData.push([]);
+                mainSheetData.push(['Fecha de Generación:', new Date().toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long', 
+                    day: 'numeric'
+                }) + ' - ' + new Date().toLocaleTimeString('es-ES')]);
+                mainSheetData.push(['Total de Unidades en Stock:', inventoryData.reduce((sum, p) => sum + p.stock, 0).toLocaleString()]);
+                mainSheetData.push(['Tipos de Productos:', inventoryData.length]);
+                mainSheetData.push([]);
+
+                // Encabezados de la tabla principal (fila 7)
+                mainSheetData.push([
+                    'CÓDIGO',
+                    'PRODUCTO',
+                    'CATEGORÍA',
+                    'PROVEEDOR',
+                    'PRECIO COMPRA',
+                    'PRECIO VENTA',
+                    '% GANANCIA',
+                    'GANANCIA ($)',
+                    'STOCK ACTUAL',
+                    'STOCK MÍNIMO',
+                    'ESTADO',
+                    'VALOR INVERTIDO',
+                    'GANANCIA POTENCIAL',
+                    'DESCRIPCIÓN'
+                ]);
+
+                // Datos de todos los productos
+                inventoryData.forEach(product => {
+                    const stockStatus = getStockStatus(product.stock, product.minStock);
+                    const stockValue = product.stock * product.costPrice;
+                    const potentialProfit = product.stock * product.profitAmount;
+                    
+                    mainSheetData.push([
+                        product.code,
+                        product.name,
+                        product.category,
+                        product.supplier,
+                        product.costPrice,
+                        product.salePrice,
+                        parseFloat(product.profitPercent.toFixed(2)),
+                        parseFloat(product.profitAmount.toFixed(2)),
+                        product.stock,
+                        product.minStock,
+                        stockStatus.text,
+                        parseFloat(stockValue.toFixed(2)),
+                        parseFloat(potentialProfit.toFixed(2)),
+                        product.description
+                    ]);
+                });
+
+                // Crear hoja principal
+                const mainWs = XLSX.utils.aoa_to_sheet(mainSheetData);
+
+                // Configurar formato profesional para la hoja principal
+                const range = XLSX.utils.decode_range(mainWs['!ref']);
+                
+                // Configurar anchos de columna optimizados
+                mainWs['!cols'] = [
+                    { wch: 10 },  // Código
+                    { wch: 25 },  // Producto
+                    { wch: 12 },  // Categoría
+                    { wch: 20 },  // Proveedor
+                    { wch: 12 },  // Precio Compra
+                    { wch: 12 },  // Precio Venta
+                    { wch: 10 },  // % Ganancia
+                    { wch: 12 },  // Ganancia $
+                    { wch: 10 },  // Stock Actual
+                    { wch: 10 },  // Stock Mínimo
+                    { wch: 12 },  // Estado
+                    { wch: 14 },  // Valor Invertido
+                    { wch: 16 },  // Ganancia Potencial
+                    { wch: 30 }   // Descripción
+                ];
+
+                // Estilo para el título principal (fila 1)
+                if (mainWs['A1']) {
+                    mainWs['A1'].s = {
+                        font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
+                        fill: { fgColor: { rgb: "2D3748" } },
+                        alignment: { horizontal: "center", vertical: "center" }
+                    };
+                }
+
+                // Estilo para el subtítulo (fila 2)
+                if (mainWs['A2']) {
+                    mainWs['A2'].s = {
+                        font: { bold: true, sz: 14, color: { rgb: "FFFFFF" } },
+                        fill: { fgColor: { rgb: "4A5568" } },
+                        alignment: { horizontal: "center", vertical: "center" }
+                    };
+                }
+
+                // Estilo para los encabezados de tabla (fila 7)
+                const headerRow = 7;
+                for (let col = 0; col < 14; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: headerRow - 1, c: col });
+                    if (mainWs[cellAddress]) {
+                        mainWs[cellAddress].s = {
+                            font: { bold: true, color: { rgb: "FFFFFF" } },
+                            fill: { fgColor: { rgb: "667eea" } },
+                            alignment: { horizontal: "center", vertical: "center" },
+                            border: {
+                                top: { style: "thin", color: { rgb: "000000" } },
+                                bottom: { style: "thin", color: { rgb: "000000" } },
+                                left: { style: "thin", color: { rgb: "000000" } },
+                                right: { style: "thin", color: { rgb: "000000" } }
+                            }
+                        };
+                    }
+                }
+
+                // Agregar hoja principal al libro
+                XLSX.utils.book_append_sheet(wb, mainWs, 'Inventario Completo');
+
+                // === HOJA 2: RESUMEN EJECUTIVO ===
+                const summaryData = [];
+                
+                summaryData.push(['RESUMEN EJECUTIVO - SUBLIMACIONES JEZIEL']);
+                summaryData.push([]);
+                
+                // Estadísticas generales
+                const totalProductTypes = inventoryData.length;
+                const totalUnitsInStock = inventoryData.reduce((sum, p) => sum + p.stock, 0);
+                const lowStockCount = inventoryData.filter(p => p.stock <= p.minStock).length;
+                const totalInvestment = inventoryData.reduce((sum, p) => sum + (p.stock * p.costPrice), 0);
+                const totalPotentialProfit = inventoryData.reduce((sum, p) => sum + (p.stock * p.profitAmount), 0);
+                
+                summaryData.push(['MÉTRICAS GENERALES']);
+                summaryData.push(['Total de Unidades en Stock:', totalUnitsInStock.toLocaleString()]);
+                summaryData.push(['Tipos de Productos Diferentes:', totalProductTypes]);
+                summaryData.push(['Productos con Stock Bajo:', lowStockCount]);
+                summaryData.push(['Valor Total Invertido:', `$${totalInvestment.toLocaleString()}`]);
+                summaryData.push(['Ganancia Potencial Total:', `$${totalPotentialProfit.toLocaleString()}`]);
+                summaryData.push(['ROI Potencial:', `${((totalPotentialProfit / totalInvestment) * 100).toFixed(1)}%`]);
+                summaryData.push([]);
+
+                // Análisis por categoría
+                summaryData.push(['ANÁLISIS POR CATEGORÍA']);
+                summaryData.push(['Categoría', 'Productos', 'Stock Total', 'Inversión', 'Ganancia Potencial', 'ROI %']);
+                
+                const categories = [...new Set(inventoryData.map(p => p.category))];
+                categories.forEach(category => {
+                    const categoryProducts = inventoryData.filter(p => p.category === category);
+                    const totalStock = categoryProducts.reduce((sum, p) => sum + p.stock, 0);
+                    const categoryInvestment = categoryProducts.reduce((sum, p) => sum + (p.stock * p.costPrice), 0);
+                    const categoryProfit = categoryProducts.reduce((sum, p) => sum + (p.stock * p.profitAmount), 0);
+                    const categoryROI = categoryInvestment > 0 ? ((categoryProfit / categoryInvestment) * 100).toFixed(1) : 0;
+                    
+                    summaryData.push([
+                        category,
+                        categoryProducts.length,
+                        totalStock,
+                        `$${categoryInvestment.toLocaleString()}`,
+                        `$${categoryProfit.toLocaleString()}`,
+                        `${categoryROI}%`
+                    ]);
+                });
+
+                summaryData.push([]);
+                summaryData.push(['PRODUCTOS QUE REQUIEREN REPOSICIÓN']);
+                summaryData.push(['Código', 'Producto', 'Stock Actual', 'Stock Mínimo', 'Unidades Faltantes']);
+                
+                const lowStockProducts = inventoryData.filter(p => p.stock <= p.minStock);
+                lowStockProducts.forEach(product => {
+                    summaryData.push([
+                        product.code,
+                        product.name,
+                        product.stock,
+                        product.minStock,
+                        product.minStock - product.stock
+                    ]);
+                });
+
+                // Crear hoja de resumen
+                const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+                summaryWs['!cols'] = [
+                    { wch: 15 },
+                    { wch: 25 },
+                    { wch: 12 },
+                    { wch: 15 },
+                    { wch: 18 },
+                    { wch: 10 }
+                ];
+
+                XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumen Ejecutivo');
+
+                // Generar y descargar archivo
+                const fileName = `Reporte_Inventario_Sublimaciones_Jeziel_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+
+                alert('¡Reporte profesional de Excel generado exitosamente!\n\nEl archivo incluye:\n• Lista completa de productos\n• Resumen ejecutivo\n• Análisis por categorías\n• Productos que requieren reposición');
+                
+            } catch (error) {
+                console.error('Error al generar reporte:', error);
+                alert('Error al generar el reporte. Por favor, intente nuevamente.');
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validaciones
+            const name = document.getElementById('productName').value.trim();
+            const code = document.getElementById('productCode').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const costPrice = parseFloat(document.getElementById('productCostPrice').value);
+            const salePrice = parseFloat(document.getElementById('productSalePrice').value);
+            const stock = parseInt(document.getElementById('productStock').value);
+            const minStock = parseInt(document.getElementById('productMinStock').value);
+            const supplier = document.getElementById('productSupplier').value;
+            const description = document.getElementById('productDescription').value.trim();
+
+            // Validar campos requeridos
+            if (!name || !code || !category || isNaN(costPrice) || isNaN(salePrice) || isNaN(stock) || isNaN(minStock) || !supplier) {
+                alert('Por favor, complete todos los campos requeridos.');
+                return;
+            }
+
+            // Validar que los precios sean positivos
+            if (costPrice < 0 || salePrice < 0) {
+                alert('Los precios deben ser valores positivos.');
+                return;
+            }
+
+            // Validar que el precio de venta sea mayor al de compra
+            if (salePrice <= costPrice) {
+                alert('El precio de venta debe ser mayor al precio de compra.');
+                return;
+            }
+
+            // Calcular ganancias
+            const profitAmount = salePrice - costPrice;
+            const profitPercent = (profitAmount / costPrice) * 100;
+
+            // Validar que no exista otro producto con el mismo código (excepto el que se está editando)
+            const existingProduct = inventoryData.find(p => p.code === code && p.id !== currentEditId);
+            if (existingProduct) {
+                console.log('Código duplicado detectado:', code, 'ID actual:', currentEditId);
+                
+                // Si es un nuevo producto, generar un código único automáticamente
+                if (!currentEditId) {
+                    generateProductCode();
+                    code = document.getElementById('productCode').value;
+                    console.log('Nuevo código generado:', code);
+                    
+                    // Verificar una vez más si el nuevo código también existe
+                    const stillExists = inventoryData.find(p => p.code === code);
+                    if (stillExists) {
+                        alert('Error al generar código único. Por favor, intente nuevamente.');
+                        return;
+                    }
+                } else {
+                    alert('Ya existe un producto con este código. Por favor, use otro código.');
+                    return;
+                }
+            }
+
+            const formData = {
+                name: name,
+                code: code,
+                category: category,
+                stock: stock,
+                minStock: minStock,
+                costPrice: costPrice,
+                salePrice: salePrice,
+                profitPercent: profitPercent,
+                profitAmount: profitAmount,
+                supplier: supplier,
+                description: description
+            };
+
+            if (currentEditId) {
+                // Editar producto existente
+                const index = inventoryData.findIndex(p => p.id === currentEditId);
+                if (index !== -1) {
+                    // Conservar el ID original
+                    inventoryData[index] = { ...inventoryData[index], ...formData };
+                    console.log('Producto editado:', inventoryData[index]);
+                } else {
+                    alert('Error: No se pudo encontrar el producto a editar.');
+                    return;
+                }
+            } else {
+                // Agregar nuevo producto
+                const newId = Math.max(...inventoryData.map(p => p.id)) + 1;
+                const newProduct = { id: newId, ...formData };
+                inventoryData.push(newProduct);
+                
+                // Actualizar contador de categoría
+                if (categoryCounters[category] !== undefined) {
+                    categoryCounters[category]++;
+                }
+                console.log('Producto agregado:', newProduct);
+            }
+
+            // Actualizar vista
+            renderTable();
+            updateStats();
+            closeModal();
+            
+            // Guardar datos en localStorage
+            saveDataToLocalStorage();
+            
+            // Mostrar mensaje de confirmación
+            const action = currentEditId ? 'editado' : 'agregado';
+            alert(`Producto ${action} exitosamente.`);
+        });
+
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('productModal')) {
+                closeModal();
+            }
+        });
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔥 Inicializando módulo de inventario...');
+            
+            // Esperar un momento para que Firebase se inicialice
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            console.log('Iniciando carga del inventario...');
+            
+            // Cargar datos desde localStorage/Firebase
+            await loadDataFromLocalStorage();
+            
+            // Si después de cargar no hay datos, usar datos por defecto
+            if (!inventoryData || inventoryData.length === 0) {
+                console.log('No hay datos, cargando datos por defecto...');
+                
+                // Cargar datos por defecto directamente
+                inventoryData = normalizeProductData([
+                    {
+                        id: 1,
+                        name: "Camiseta Blanca Premium",
+                        code: "TEX-001",
+                        category: "Textil",
+                        stock: 45,
+                        minStock: 10,
+                        costPrice: 8.50,
+                        salePrice: 18.00,
+                        profitPercent: 111.76,
+                        profitAmount: 9.50,
+                        supplier: "Proveedor Textil S.A.",
+                        description: "Camiseta 100% algodón para sublimación"
+                    },
+                    {
+                        id: 2,
+                        name: "Taza de Aluminio",
+                        code: "ALU-001",
+                        category: "Aluminio",
+                        stock: 25,
+                        minStock: 15,
+                        costPrice: 4.20,
+                        salePrice: 12.00,
+                        profitPercent: 185.71,
+                        profitAmount: 7.80,
+                        supplier: "Suministros Metálicos",
+                        description: "Taza de aluminio apta para sublimación"
+                    },
+                    {
+                        id: 3,
+                        name: "Portarretrato MDF",
+                        code: "MDF-001",
+                        category: "MDF",
+                        stock: 8,
+                        minStock: 12,
+                        costPrice: 3.50,
+                        salePrice: 15.00,
+                        profitPercent: 328.57,
+                        profitAmount: 11.50,
+                        supplier: "Maderas MDF Corp",
+                        description: "Marco portarretrato MDF 20x25cm"
+                    }
+                ]);
+                
+                console.log('Datos por defecto cargados:', inventoryData.length, 'productos');
+            }
+            
+            console.log('Datos finales cargados:', inventoryData.length, 'productos');
+            
+            // Calcular contadores basándose en códigos existentes
+            calculateCategoryCounters();
+            
+            // Establecer ordenamiento por defecto
+            document.getElementById('sortFilter').value = 'code';
+            updateSortIcons('code');
+            
+            // Renderizar tabla y actualizar estadísticas
+            renderTable();
+            updateStats();
+            
+            console.log('Página de inventario inicializada correctamente');
+        });
+
+        // Función para limpiar datos (útil para desarrollo/testing)
+        function clearAllData() {
+            if (confirm('¿Estás seguro de que deseas borrar TODOS los datos del inventario?\n\nEsta acción no se puede deshacer.')) {
+                localStorage.removeItem('inventoryData');
+                localStorage.removeItem('categoryCounters');
+                inventoryData = [];
+                categoryCounters = {
+                    'Textil': 0,
+                    'Aluminio': 0,
+                    'MDF': 0,
+                    'Ceramica': 0,
+                    'Vidrio': 0,
+                    'Neopreno': 0,
+                    'Acrilico': 0
+                };
+                renderTable();
+                updateStats();
+                console.log('Todos los datos han sido borrados');
+                alert('Todos los datos han sido borrados exitosamente.');
+            }
+        }
+
+        // Función para exportar datos a JSON (backup)
+        function exportDataAsJSON() {
+            const dataToExport = {
+                inventoryData: inventoryData,
+                categoryCounters: categoryCounters,
+                exportDate: new Date().toISOString()
+            };
+            
+            const jsonContent = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `inventario_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Hacer funciones disponibles globalmente para debugging
+        window.clearAllData = clearAllData;
+        window.exportDataAsJSON = exportDataAsJSON;
+        window.saveDataToLocalStorage = saveDataToLocalStorage;
+        window.loadDataFromLocalStorage = loadDataFromLocalStorage;
+    </script>
+</body>
+</html>

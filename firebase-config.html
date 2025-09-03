@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Firebase - Sublimaciones Jeziel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .config-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .config-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .config-header h1 {
+            color: #2d3748;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .config-header p {
+            color: #718096;
+            font-size: 1rem;
+        }
+
+        .firebase-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ffca28 0%, #ffa000 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+
+        .status-success {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .status-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+
+        .status-warning {
+            background: #fffbeb;
+            color: #744210;
+            border: 1px solid #f6e05e;
+        }
+
+        .instructions {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .instructions h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #4a5568;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .instructions a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .instructions a:hover {
+            text-decoration: underline;
+        }
+
+        .toggle-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .toggle-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .toggle-link:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="config-container">
+        <div class="config-header">
+            <div class="firebase-logo">
+                <i class="fas fa-fire"></i>
+            </div>
+            <h1>Configuración de Firebase</h1>
+            <p>Configura la sincronización en la nube para tu sistema ERP</p>
+        </div>
+
+        <div id="status-display"></div>
+
+        <form id="firebase-config-form">
+            <div class="form-group">
+                <label class="form-label" for="apiKey">
+                    <i class="fas fa-key"></i> API Key
+                </label>
+                <input type="text" id="apiKey" class="form-input" 
+                       placeholder="Tu Firebase API Key" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="authDomain">
+                    <i class="fas fa-globe"></i> Auth Domain
+                </label>
+                <input type="text" id="authDomain" class="form-input" 
+                       placeholder="tu-proyecto.firebaseapp.com" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="projectId">
+                    <i class="fas fa-project-diagram"></i> Project ID
+                </label>
+                <input type="text" id="projectId" class="form-input" 
+                       placeholder="tu-proyecto-id" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="storageBucket">
+                    <i class="fas fa-database"></i> Storage Bucket
+                </label>
+                <input type="text" id="storageBucket" class="form-input" 
+                       placeholder="tu-proyecto.appspot.com" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="messagingSenderId">
+                    <i class="fas fa-paper-plane"></i> Messaging Sender ID
+                </label>
+                <input type="text" id="messagingSenderId" class="form-input" 
+                       placeholder="123456789" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="appId">
+                    <i class="fas fa-mobile-alt"></i> App ID
+                </label>
+                <input type="text" id="appId" class="form-input" 
+                       placeholder="1:123456789:web:abcdef123456" required>
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-save"></i> Guardar Configuración
+            </button>
+
+            <button type="button" class="btn btn-secondary" onclick="testConnection()">
+                <i class="fas fa-wifi"></i> Probar Conexión
+            </button>
+        </form>
+
+        <div class="toggle-section">
+            <a href="#" class="toggle-link" onclick="toggleInstructions()">
+                <i class="fas fa-question-circle"></i> ¿Cómo obtener las credenciales de Firebase?
+            </a>
+        </div>
+
+        <div id="instructions" class="instructions hidden">
+            <h3><i class="fas fa-info-circle"></i> Instrucciones para configurar Firebase</h3>
+            <ol>
+                <li>Ve a <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
+                <li>Crea un nuevo proyecto o selecciona uno existente</li>
+                <li>Ve a "Configuración del proyecto" (ícono de engranaje)</li>
+                <li>En la pestaña "General", busca "Tus aplicaciones"</li>
+                <li>Haz clic en "Agregar app" y selecciona "Web" (&lt;/&gt;)</li>
+                <li>Registra tu app con un nombre como "Sublimaciones Jeziel"</li>
+                <li>Copia la configuración que aparece en "firebaseConfig"</li>
+                <li>Ve a "Firestore Database" y crea una base de datos</li>
+                <li>Configura las reglas de seguridad según tus necesidades</li>
+            </ol>
+        </div>
+
+        <div class="toggle-section" style="margin-top: 30px;">
+            <a href="../index.html" class="toggle-link">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Cargar configuración existente si existe
+        document.addEventListener('DOMContentLoaded', function() {
+            loadExistingConfig();
+            checkCurrentStatus();
+        });
+
+        function loadExistingConfig() {
+            // Cargar configuración real por defecto
+            const realConfig = {
+                apiKey: "AIzaSyBtPEDn8ry5_skz0IjmkDd77ix-sqm5Y8Q",
+                authDomain: "sublimaciones-jeziel.firebaseapp.com",
+                projectId: "sublimaciones-jeziel",
+                storageBucket: "sublimaciones-jeziel.firebasestorage.app",
+                messagingSenderId: "83882425003",
+                appId: "1:83882425003:web:2e00bbd7fe3a7e23fb15ee"
+            };
+            
+            const savedConfig = localStorage.getItem('firebaseConfig');
+            let configToUse = realConfig;
+            
+            if (savedConfig) {
+                try {
+                    configToUse = JSON.parse(savedConfig);
+                } catch (error) {
+                    console.error('Error cargando configuración:', error);
+                    configToUse = realConfig;
+                }
+            }
+            
+            document.getElementById('apiKey').value = configToUse.apiKey || '';
+            document.getElementById('authDomain').value = configToUse.authDomain || '';
+            document.getElementById('projectId').value = configToUse.projectId || '';
+            document.getElementById('storageBucket').value = configToUse.storageBucket || '';
+            document.getElementById('messagingSenderId').value = configToUse.messagingSenderId || '';
+            document.getElementById('appId').value = configToUse.appId || '';
+        }
+
+        function checkCurrentStatus() {
+            const statusDiv = document.getElementById('status-display');
+            const savedConfig = localStorage.getItem('firebaseConfig');
+            
+            if (savedConfig) {
+                statusDiv.innerHTML = `
+                    <div class="status-success">
+                        <i class="fas fa-check-circle"></i>
+                        Configuración guardada. Firebase está disponible para sincronización.
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="status-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        No hay configuración de Firebase. El sistema funciona solo con localStorage.
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById('firebase-config-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveConfiguration();
+        });
+
+        function saveConfiguration() {
+            const config = {
+                apiKey: document.getElementById('apiKey').value.trim(),
+                authDomain: document.getElementById('authDomain').value.trim(),
+                projectId: document.getElementById('projectId').value.trim(),
+                storageBucket: document.getElementById('storageBucket').value.trim(),
+                messagingSenderId: document.getElementById('messagingSenderId').value.trim(),
+                appId: document.getElementById('appId').value.trim()
+            };
+
+            // Validar campos
+            if (!config.apiKey || !config.authDomain || !config.projectId) {
+                showStatus('error', 'Por favor completa todos los campos requeridos.');
+                return;
+            }
+
+            try {
+                localStorage.setItem('firebaseConfig', JSON.stringify(config));
+                showStatus('success', 'Configuración guardada exitosamente. Recarga la página para aplicar cambios.');
+                
+                // Actualizar el archivo de configuración
+                updateConfigFile(config);
+                
+            } catch (error) {
+                showStatus('error', 'Error guardando configuración: ' + error.message);
+            }
+        }
+
+        async function testConnection() {
+            const config = {
+                apiKey: document.getElementById('apiKey').value.trim(),
+                authDomain: document.getElementById('authDomain').value.trim(),
+                projectId: document.getElementById('projectId').value.trim(),
+                storageBucket: document.getElementById('storageBucket').value.trim(),
+                messagingSenderId: document.getElementById('messagingSenderId').value.trim(),
+                appId: document.getElementById('appId').value.trim()
+            };
+
+            if (!config.apiKey || !config.projectId) {
+                showStatus('error', 'Ingresa al menos API Key y Project ID para probar la conexión.');
+                return;
+            }
+
+            showStatus('warning', 'Probando conexión a Firebase...');
+
+            try {
+                // Intentar inicializar Firebase con la configuración
+                if (firebase.apps.length > 0) {
+                    firebase.apps.forEach(app => app.delete());
+                }
+                
+                const app = firebase.initializeApp(config, 'test-app');
+                const testDb = firebase.firestore(app);
+                
+                // Hacer una prueba real de conexión
+                await testDb.collection('_connection_test').limit(1).get();
+                
+                showStatus('success', '🎉 ¡Conexión exitosa a Firebase! Configuración válida.');
+                
+                // Limpiar la app de prueba
+                await app.delete();
+                
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                let errorMessage = 'Error de conexión: ';
+                
+                if (error.code === 'permission-denied') {
+                    errorMessage += 'Permisos denegados. Verifica las reglas de Firestore.';
+                } else if (error.code === 'not-found') {
+                    errorMessage += 'Proyecto no encontrado. Verifica el Project ID.';
+                } else if (error.code === 'invalid-api-key') {
+                    errorMessage += 'API Key inválida.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showStatus('error', errorMessage);
+            }
+        }
+
+        function updateConfigFile(config) {
+            // Esta función simula la actualización del archivo de configuración
+            // En una implementación real, esto se haría en el servidor
+            console.log('Configuración a aplicar:', config);
+        }
+
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status-display');
+            const iconMap = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-times-circle',
+                warning: 'fas fa-exclamation-triangle'
+            };
+
+            statusDiv.innerHTML = `
+                <div class="status-${type}">
+                    <i class="${iconMap[type]}"></i>
+                    ${message}
+                </div>
+            `;
+        }
+
+        function toggleInstructions() {
+            const instructions = document.getElementById('instructions');
+            instructions.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>

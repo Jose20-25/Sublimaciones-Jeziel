@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Producción - Sublimaciones Jeziel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f7fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .sidebar-logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section-title {
+            padding: 0 20px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0aec0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-left-color: #667eea;
+        }
+
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.15);
+            color: #90cdf4;
+            border-left-color: #667eea;
+        }
+
+        .nav-item i {
+            width: 24px;
+            margin-right: 12px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-layout {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title i {
+            color: #667eea;
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+        }
+
+        .production-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid;
+        }
+
+        .stat-card.orders {
+            border-left-color: #3182ce;
+        }
+
+        .stat-card.in-progress {
+            border-left-color: #dd6b20;
+        }
+
+        .stat-card.completed {
+            border-left-color: #38a169;
+        }
+
+        .stat-card.efficiency {
+            border-left-color: #805ad5;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .stat-card.orders .stat-icon {
+            background: #3182ce;
+        }
+
+        .stat-card.in-progress .stat-icon {
+            background: #dd6b20;
+        }
+
+        .stat-card.completed .stat-icon {
+            background: #38a169;
+        }
+
+        .stat-card.efficiency .stat-icon {
+            background: #805ad5;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            color: #38a169;
+        }
+
+        .stat-change.negative {
+            color: #e53e3e;
+        }
+
+        /* Production Controls */
+        .production-controls {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .controls-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .control-input {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .control-select {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Production Queue */
+        .production-queue {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .queue-header {
+            padding: 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .queue-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .queue-filters {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-btn:hover:not(.active) {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Production Table */
+        .production-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .production-table th {
+            background: #f7fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .production-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        .production-table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .status-progress {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .status-completed {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+
+        .status-paused {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .priority-high {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+
+        .priority-medium {
+            color: #dd6b20;
+            font-weight: 600;
+        }
+
+        .priority-low {
+            color: #38a169;
+            font-weight: 600;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+        }
+
+        .btn-edit {
+            background: #3182ce;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2c5282;
+        }
+
+        .btn-pause {
+            background: #dd6b20;
+            color: white;
+        }
+
+        .btn-pause:hover {
+            background: #c05621;
+        }
+
+        .btn-complete {
+            background: #38a169;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #2f855a;
+        }
+
+        .btn-delete {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c53030;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #718096;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #e53e3e;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .main-layout {
+                margin-left: 70px;
+            }
+
+            .sidebar-logo-text {
+                display: none;
+            }
+
+            .nav-item span {
+                display: none;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .header-title {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .production-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .production-table {
+                font-size: 12px;
+            }
+
+            .production-table th,
+            .production-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo">
+                <div class="sidebar-logo-icon">
+                    <i class="fas fa-sublimation-icon" style="font-size: 20px;">SJ</i>
+                </div>
+                <span class="sidebar-logo-text">Sublimaciones Jeziel</span>
+            </a>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Principal</div>
+                <a href="../index.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Operaciones</div>
+                <a href="inventario.html" class="nav-item">
+                    <i class="fas fa-boxes"></i>
+                    <span>Inventario</span>
+                </a>
+                <a href="ventas.html" class="nav-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Ventas</span>
+                </a>
+                <a href="compras.html" class="nav-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Compras</span>
+                </a>
+                <a href="produccion.html" class="nav-item active">
+                    <i class="fas fa-industry"></i>
+                    <span>Producción</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Contactos</div>
+                <a href="clientes.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+                <a href="proveedores.html" class="nav-item">
+                    <i class="fas fa-truck"></i>
+                    <span>Proveedores</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Finanzas</div>
+                <a href="facturas.html" class="nav-item">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Facturas</span>
+                </a>
+                <a href="contabilidad.html" class="nav-item">
+                    <i class="fas fa-calculator"></i>
+                    <span>Contabilidad</span>
+                </a>
+                <a href="finanzas.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Finanzas</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Análisis</div>
+                <a href="reportes.html" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reportes</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Sistema</div>
+                <a href="configuracion.html" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+                <a href="soporte.html" class="nav-item">
+                    <i class="fas fa-life-ring"></i>
+                    <span>Soporte</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-layout">
+        <header class="header">
+            <div class="header-left">
+                <div>
+                    <h1 class="header-title">
+                        <i class="fas fa-industry"></i>
+                        Producción
+                    </h1>
+                    <div class="breadcrumb">
+                        <a href="../index.html">Dashboard</a> / Producción
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="exportProduction()">
+                    <i class="fas fa-download"></i>
+                    Exportar
+                </button>
+                <button class="btn-primary" onclick="openNewOrderModal()">
+                    <i class="fas fa-plus"></i>
+                    Nueva Orden
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <!-- Production Statistics -->
+            <div class="production-stats">
+                <div class="stat-card orders">
+                    <div class="stat-header">
+                        <span class="stat-title">Órdenes Activas</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">24</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +8% vs mes anterior
+                    </div>
+                </div>
+
+                <div class="stat-card in-progress">
+                    <div class="stat-header">
+                        <span class="stat-title">En Proceso</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +15% esta semana
+                    </div>
+                </div>
+
+                <div class="stat-card completed">
+                    <div class="stat-header">
+                        <span class="stat-title">Completadas Hoy</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">8</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> Meta del día alcanzada
+                    </div>
+                </div>
+
+                <div class="stat-card efficiency">
+                    <div class="stat-header">
+                        <span class="stat-title">Eficiencia</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">87%</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +3% vs promedio
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production Controls -->
+            <div class="production-controls">
+                <div class="controls-header">
+                    <h2 class="controls-title">Controles de Producción</h2>
+                </div>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label class="control-label">Línea de Producción</label>
+                        <select class="control-select" id="productionLine">
+                            <option value="">Seleccionar línea</option>
+                            <option value="sublimacion1">Sublimación 1</option>
+                            <option value="sublimacion2">Sublimación 2</option>
+                            <option value="corte">Corte y Diseño</option>
+                            <option value="acabados">Acabados</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Estado de Máquina</label>
+                        <select class="control-select" id="machineStatus">
+                            <option value="operativa">Operativa</option>
+                            <option value="mantenimiento">En Mantenimiento</option>
+                            <option value="parada">Parada</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Operador Asignado</label>
+                        <select class="control-select" id="assignedOperator">
+                            <option value="">Seleccionar operador</option>
+                            <option value="maria">María González</option>
+                            <option value="carlos">Carlos Ruiz</option>
+                            <option value="ana">Ana López</option>
+                            <option value="pedro">Pedro Martín</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Prioridad</label>
+                        <select class="control-select" id="priority">
+                            <option value="normal">Normal</option>
+                            <option value="alta">Alta</option>
+                            <option value="urgente">Urgente</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production Queue -->
+            <div class="production-queue">
+                <div class="queue-header">
+                    <h2 class="queue-title">
+                        <i class="fas fa-list"></i>
+                        Cola de Producción
+                    </h2>
+                    <div class="queue-filters">
+                        <button class="filter-btn active" onclick="filterProduction('all')">Todas</button>
+                        <button class="filter-btn" onclick="filterProduction('pending')">Pendientes</button>
+                        <button class="filter-btn" onclick="filterProduction('progress')">En Proceso</button>
+                        <button class="filter-btn" onclick="filterProduction('completed')">Completadas</button>
+                    </div>
+                </div>
+                
+                <table class="production-table">
+                    <thead>
+                        <tr>
+                            <th>Orden #</th>
+                            <th>Producto</th>
+                            <th>Cliente</th>
+                            <th>Cantidad</th>
+                            <th>Progreso</th>
+                            <th>Estado</th>
+                            <th>Prioridad</th>
+                            <th>Fecha Entrega</th>
+                            <th>Operador</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productionTableBody">
+                        <tr>
+                            <td><strong>ORD-001</strong></td>
+                            <td>Camisetas Personalizadas</td>
+                            <td>Empresa XYZ</td>
+                            <td>50 uds</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                                75%
+                            </td>
+                            <td><span class="status-badge status-progress">En Proceso</span></td>
+                            <td><span class="priority-high">Alta</span></td>
+                            <td>15/09/2025</td>
+                            <td>María González</td>
+                            <td>
+                                <button class="action-btn btn-edit" onclick="editOrder(1)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn btn-pause" onclick="pauseOrder(1)">
+                                    <i class="fas fa-pause"></i>
+                                </button>
+                                <button class="action-btn btn-complete" onclick="completeOrder(1)">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>ORD-002</strong></td>
+                            <td>Tazas Sublimadas</td>
+                            <td>Café del Centro</td>
+                            <td>100 uds</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 30%"></div>
+                                </div>
+                                30%
+                            </td>
+                            <td><span class="status-badge status-progress">En Proceso</span></td>
+                            <td><span class="priority-medium">Media</span></td>
+                            <td>20/09/2025</td>
+                            <td>Carlos Ruiz</td>
+                            <td>
+                                <button class="action-btn btn-edit" onclick="editOrder(2)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn btn-pause" onclick="pauseOrder(2)">
+                                    <i class="fas fa-pause"></i>
+                                </button>
+                                <button class="action-btn btn-complete" onclick="completeOrder(2)">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>ORD-003</strong></td>
+                            <td>Gorras Bordadas</td>
+                            <td>Club Deportivo</td>
+                            <td>25 uds</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 100%"></div>
+                                </div>
+                                100%
+                            </td>
+                            <td><span class="status-badge status-completed">Completada</span></td>
+                            <td><span class="priority-low">Baja</span></td>
+                            <td>10/09/2025</td>
+                            <td>Ana López</td>
+                            <td>
+                                <button class="action-btn btn-edit" onclick="editOrder(3)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="deleteOrder(3)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>ORD-004</strong></td>
+                            <td>Llaveros Personalizados</td>
+                            <td>Evento Corporativo</td>
+                            <td>200 uds</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 0%"></div>
+                                </div>
+                                0%
+                            </td>
+                            <td><span class="status-badge status-pending">Pendiente</span></td>
+                            <td><span class="priority-high">Alta</span></td>
+                            <td>25/09/2025</td>
+                            <td>-</td>
+                            <td>
+                                <button class="action-btn btn-edit" onclick="editOrder(4)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn btn-complete" onclick="startOrder(4)">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="deleteOrder(4)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nueva Orden -->
+    <div id="newOrderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Nueva Orden de Producción</h2>
+                <button class="close-btn" onclick="closeNewOrderModal()">&times;</button>
+            </div>
+            
+            <form id="newOrderForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Producto *</label>
+                        <select class="form-input" id="orderProduct" required>
+                            <option value="">Seleccionar producto</option>
+                            <option value="camisetas">Camisetas Personalizadas</option>
+                            <option value="tazas">Tazas Sublimadas</option>
+                            <option value="gorras">Gorras Bordadas</option>
+                            <option value="llaveros">Llaveros Personalizados</option>
+                            <option value="mouse-pads">Mouse Pads</option>
+                            <option value="vasos">Vasos Térmicos</option>
+                            <option value="playeras">Playeras Deportivas</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Cliente *</label>
+                        <select class="form-input" id="orderClient" required>
+                            <option value="">Seleccionar cliente</option>
+                            <option value="empresa-xyz">Empresa XYZ</option>
+                            <option value="cafe-centro">Café del Centro</option>
+                            <option value="club-deportivo">Club Deportivo</option>
+                            <option value="evento-corporativo">Evento Corporativo</option>
+                            <option value="tienda-local">Tienda Local</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Cantidad *</label>
+                        <input type="number" class="form-input" id="orderQuantity" placeholder="Ej: 50" required min="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Prioridad *</label>
+                        <select class="form-input" id="orderPriority" required>
+                            <option value="baja">Baja</option>
+                            <option value="media" selected>Media</option>
+                            <option value="alta">Alta</option>
+                            <option value="urgente">Urgente</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Fecha de Entrega *</label>
+                        <input type="date" class="form-input" id="orderDeliveryDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Operador Asignado</label>
+                        <select class="form-input" id="orderOperator">
+                            <option value="">Sin asignar</option>
+                            <option value="maria">María González</option>
+                            <option value="carlos">Carlos Ruiz</option>
+                            <option value="ana">Ana López</option>
+                            <option value="pedro">Pedro Martín</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Especificaciones del Diseño</label>
+                    <textarea class="form-textarea" id="orderSpecs" placeholder="Detalles del diseño, colores, medidas especiales, etc."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Notas Adicionales</label>
+                    <textarea class="form-textarea" id="orderNotes" placeholder="Instrucciones especiales, observaciones, etc."></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeNewOrderModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Crear Orden</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let productionOrders = [
+            {
+                id: 1,
+                number: 'ORD-001',
+                product: 'Camisetas Personalizadas',
+                client: 'Empresa XYZ',
+                quantity: 50,
+                progress: 75,
+                status: 'progress',
+                priority: 'alta',
+                deliveryDate: '2025-09-15',
+                operator: 'María González',
+                specs: 'Logo en el pecho, colores corporativos'
+            },
+            {
+                id: 2,
+                number: 'ORD-002',
+                product: 'Tazas Sublimadas',
+                client: 'Café del Centro',
+                quantity: 100,
+                progress: 30,
+                status: 'progress',
+                priority: 'media',
+                deliveryDate: '2025-09-20',
+                operator: 'Carlos Ruiz',
+                specs: 'Logo del café en ambos lados'
+            },
+            {
+                id: 3,
+                number: 'ORD-003',
+                product: 'Gorras Bordadas',
+                client: 'Club Deportivo',
+                quantity: 25,
+                progress: 100,
+                status: 'completed',
+                priority: 'baja',
+                deliveryDate: '2025-09-10',
+                operator: 'Ana López',
+                specs: 'Escudo del club bordado'
+            },
+            {
+                id: 4,
+                number: 'ORD-004',
+                product: 'Llaveros Personalizados',
+                client: 'Evento Corporativo',
+                quantity: 200,
+                progress: 0,
+                status: 'pending',
+                priority: 'alta',
+                deliveryDate: '2025-09-25',
+                operator: '-',
+                specs: 'Forma personalizada con logo'
+            }
+        ];
+
+        let currentFilter = 'all';
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            setMinDate();
+            renderProductionTable();
+        });
+
+        // Establecer fecha mínima en el formulario
+        function setMinDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('orderDeliveryDate').min = today;
+        }
+
+        // Renderizar tabla de producción
+        function renderProductionTable() {
+            const tbody = document.getElementById('productionTableBody');
+            tbody.innerHTML = '';
+
+            const filteredOrders = productionOrders.filter(order => {
+                if (currentFilter === 'all') return true;
+                return order.status === currentFilter;
+            });
+
+            filteredOrders.forEach(order => {
+                const row = createTableRow(order);
+                tbody.appendChild(row);
+            });
+        }
+
+        // Crear fila de tabla
+        function createTableRow(order) {
+            const tr = document.createElement('tr');
+            
+            const statusClass = {
+                'pending': 'status-pending',
+                'progress': 'status-progress',
+                'completed': 'status-completed',
+                'paused': 'status-paused'
+            };
+
+            const statusText = {
+                'pending': 'Pendiente',
+                'progress': 'En Proceso',
+                'completed': 'Completada',
+                'paused': 'Pausada'
+            };
+
+            const priorityClass = {
+                'baja': 'priority-low',
+                'media': 'priority-medium',
+                'alta': 'priority-high',
+                'urgente': 'priority-high'
+            };
+
+            const priorityText = {
+                'baja': 'Baja',
+                'media': 'Media',
+                'alta': 'Alta',
+                'urgente': 'Urgente'
+            };
+
+            tr.innerHTML = `
+                <td><strong>${order.number}</strong></td>
+                <td>${order.product}</td>
+                <td>${order.client}</td>
+                <td>${order.quantity} uds</td>
+                <td>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${order.progress}%"></div>
+                    </div>
+                    ${order.progress}%
+                </td>
+                <td><span class="status-badge ${statusClass[order.status]}">${statusText[order.status]}</span></td>
+                <td><span class="${priorityClass[order.priority]}">${priorityText[order.priority]}</span></td>
+                <td>${formatDate(order.deliveryDate)}</td>
+                <td>${order.operator}</td>
+                <td>
+                    <button class="action-btn btn-edit" onclick="editOrder(${order.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${order.status === 'pending' ? 
+                        `<button class="action-btn btn-complete" onclick="startOrder(${order.id})">
+                            <i class="fas fa-play"></i>
+                         </button>` :
+                        order.status === 'progress' ?
+                        `<button class="action-btn btn-pause" onclick="pauseOrder(${order.id})">
+                            <i class="fas fa-pause"></i>
+                         </button>
+                         <button class="action-btn btn-complete" onclick="completeOrder(${order.id})">
+                            <i class="fas fa-check"></i>
+                         </button>` :
+                        ''
+                    }
+                    ${order.status !== 'progress' ? 
+                        `<button class="action-btn btn-delete" onclick="deleteOrder(${order.id})">
+                            <i class="fas fa-trash"></i>
+                         </button>` : ''
+                    }
+                </td>
+            `;
+
+            return tr;
+        }
+
+        // Formatear fecha
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES');
+        }
+
+        // Filtrar producción
+        function filterProduction(filter) {
+            currentFilter = filter;
+            
+            // Actualizar botones de filtro
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            renderProductionTable();
+        }
+
+        // Abrir modal nueva orden
+        function openNewOrderModal() {
+            document.getElementById('newOrderModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Cerrar modal nueva orden
+        function closeNewOrderModal() {
+            document.getElementById('newOrderModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('newOrderForm').reset();
+        }
+
+        // Manejar envío del formulario
+        document.getElementById('newOrderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const newOrder = {
+                id: productionOrders.length + 1,
+                number: `ORD-${String(productionOrders.length + 1).padStart(3, '0')}`,
+                product: document.getElementById('orderProduct').options[document.getElementById('orderProduct').selectedIndex].text,
+                client: document.getElementById('orderClient').options[document.getElementById('orderClient').selectedIndex].text,
+                quantity: parseInt(document.getElementById('orderQuantity').value),
+                progress: 0,
+                status: 'pending',
+                priority: document.getElementById('orderPriority').value,
+                deliveryDate: document.getElementById('orderDeliveryDate').value,
+                operator: document.getElementById('orderOperator').value ? 
+                         document.getElementById('orderOperator').options[document.getElementById('orderOperator').selectedIndex].text : '-',
+                specs: document.getElementById('orderSpecs').value || 'Sin especificaciones'
+            };
+
+            productionOrders.push(newOrder);
+            renderProductionTable();
+            closeNewOrderModal();
+            
+            // Mostrar notificación de éxito
+            showNotification('Orden de producción creada exitosamente', 'success');
+        });
+
+        // Funciones de acciones
+        function editOrder(id) {
+            const order = productionOrders.find(o => o.id === id);
+            if (order) {
+                alert(`Editando orden ${order.number}\nEsta funcionalidad estará disponible próximamente.`);
+            }
+        }
+
+        function startOrder(id) {
+            const order = productionOrders.find(o => o.id === id);
+            if (order) {
+                order.status = 'progress';
+                order.progress = 10;
+                renderProductionTable();
+                showNotification(`Orden ${order.number} iniciada`, 'success');
+            }
+        }
+
+        function pauseOrder(id) {
+            const order = productionOrders.find(o => o.id === id);
+            if (order) {
+                order.status = 'paused';
+                renderProductionTable();
+                showNotification(`Orden ${order.number} pausada`, 'warning');
+            }
+        }
+
+        function completeOrder(id) {
+            const order = productionOrders.find(o => o.id === id);
+            if (order) {
+                order.status = 'completed';
+                order.progress = 100;
+                renderProductionTable();
+                showNotification(`Orden ${order.number} completada`, 'success');
+            }
+        }
+
+        function deleteOrder(id) {
+            const order = productionOrders.find(o => o.id === id);
+            if (order && confirm(`¿Está seguro de eliminar la orden ${order.number}?`)) {
+                productionOrders = productionOrders.filter(o => o.id !== id);
+                renderProductionTable();
+                showNotification(`Orden ${order.number} eliminada`, 'error');
+            }
+        }
+
+        // Exportar datos
+        function exportProduction() {
+            const wb = XLSX.utils.book_new();
+            
+            const wsData = [
+                ['Orden', 'Producto', 'Cliente', 'Cantidad', 'Progreso', 'Estado', 'Prioridad', 'Fecha Entrega', 'Operador'],
+                ...productionOrders.map(order => [
+                    order.number,
+                    order.product,
+                    order.client,
+                    order.quantity,
+                    `${order.progress}%`,
+                    order.status,
+                    order.priority,
+                    order.deliveryDate,
+                    order.operator
+                ])
+            ];
+            
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, 'Producción');
+            
+            const date = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `produccion_${date}.xlsx`);
+            
+            showNotification('Reporte exportado exitosamente', 'success');
+        }
+
+        // Mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 3000;
+                opacity: 0;
+                transform: translateX(100%);
+                transition: all 0.3s ease;
+            `;
+
+            const colors = {
+                'success': '#38a169',
+                'error': '#e53e3e',
+                'warning': '#dd6b20',
+                'info': '#3182ce'
+            };
+
+            notification.style.background = colors[type] || colors.info;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('newOrderModal');
+            if (e.target === modal) {
+                closeNewOrderModal();
+            }
+        });
+
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeNewOrderModal();
+            }
+        });
+    </script>
+</body>
+</html>
