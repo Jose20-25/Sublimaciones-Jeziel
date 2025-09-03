@@ -448,27 +448,27 @@
             
             <div class="nav-section">
                 <div class="nav-section-title">Gestión Principal</div>
-                <a href="#" class="nav-item" onclick="navigateToModule('ventas')">
+                <a href="modules/ventas.html" class="nav-item" data-module="ventas">
                     <i class="fas fa-shopping-cart"></i>
                     Ventas
                 </a>
-                <a href="#" class="nav-item" onclick="navigateToModule('compras')">
+                <a href="modules/compras.html" class="nav-item" data-module="compras">
                     <i class="fas fa-shopping-bag"></i>
                     Compras
                 </a>
-                <a href="#" class="nav-item" onclick="navigateToModule('inventario')">
+                <a href="modules/inventario.html" class="nav-item" data-module="inventario">
                     <i class="fas fa-boxes"></i>
                     Inventario
                 </a>
-                <a href="#" class="nav-item" onclick="navigateToModule('produccion')">
+                <a href="modules/produccion.html" class="nav-item" data-module="produccion">
                     <i class="fas fa-industry"></i>
                     Producción
                 </a>
-                <a href="#" class="nav-item" onclick="navigateToModule('clientes')">
+                <a href="modules/clientes.html" class="nav-item" data-module="clientes">
                     <i class="fas fa-users"></i>
                     Clientes
                 </a>
-                <a href="#" class="nav-item" onclick="navigateToModule('proveedores')">
+                <a href="modules/proveedores.html" class="nav-item" data-module="proveedores">
                     <i class="fas fa-truck"></i>
                     Proveedores
                 </a>
@@ -476,15 +476,15 @@
 
             <div class="nav-section">
                 <div class="nav-section-title">Facturación</div>
-                <a href="#" class="nav-item" onclick="navigateToModule('facturas')">
+                <a href="modules/facturas.html" class="nav-item" data-module="facturas">
                     <i class="fas fa-file-invoice-dollar"></i>
                     Facturas
                 </a>
-                <a href="#" class="nav-item" onclick="navigateToModule('contabilidad')">
+                <a href="modules/contabilidad.html" class="nav-item" data-module="contabilidad">
                     <i class="fas fa-calculator"></i>
                     Contabilidad
                 </a>
-                <a href="#" class="nav-item" onclick="navigateToModule('finanzas')">
+                <a href="modules/finanzas.html" class="nav-item" data-module="finanzas">
                     <i class="fas fa-chart-line"></i>
                     Finanzas
                 </a>
@@ -492,15 +492,15 @@
 
             <div class="nav-section">
                 <div class="nav-section-title">Administración</div>
-                <a href="#" class="nav-item" onclick="navigateToModule('reportes')">
+                <a href="modules/reportes.html" class="nav-item" data-module="reportes">
                     <i class="fas fa-chart-bar"></i>
                     Reportes
                 </a>
-                <a href="#" class="nav-item" onclick="navigateToModule('configuracion')">
+                <a href="modules/configuracion.html" class="nav-item" data-module="configuracion">
                     <i class="fas fa-cog"></i>
                     Configuración
                 </a>
-                <a href="firebase-config.html" class="nav-item">
+                <a href="firebase-config.html" class="nav-item" target="_blank">
                     <i class="fas fa-cloud"></i>
                     Firebase
                 </a>
@@ -508,7 +508,7 @@
 
             <div class="nav-section">
                 <div class="nav-section-title">Soporte</div>
-                <a href="#" class="nav-item" onclick="navigateToModule('soporte')">
+                <a href="modules/soporte.html" class="nav-item" data-module="soporte">
                     <i class="fas fa-life-ring"></i>
                     Ayuda
                 </a>
@@ -760,33 +760,72 @@
 
     <script>
         function navigateToModule(module) {
-            // Remover clase active de todos los elementos
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Navegación a módulos
-            const modulePages = {
-                'inventario': 'modules/inventario.html',
-                'ventas': 'modules/ventas.html',
-                'compras': 'modules/compras.html',
-                'produccion': 'modules/produccion.html',
-                'clientes': 'modules/clientes.html',
-                'proveedores': 'modules/proveedores.html',
-                'facturas': 'modules/facturas.html',
-                'contabilidad': 'modules/contabilidad.html',
-                'finanzas': 'modules/finanzas.html',
-                'reportes': 'modules/reportes.html',
-                'configuracion': 'modules/configuracion.html',
-                'soporte': 'modules/soporte.html'
-            };
+            try {
+                console.log(`🔗 Función de respaldo: navegando a módulo ${module}`);
+                
+                // Navegación a módulos (función de respaldo)
+                const modulePages = {
+                    'inventario': 'modules/inventario.html',
+                    'ventas': 'modules/ventas.html',
+                    'compras': 'modules/compras.html',
+                    'produccion': 'modules/produccion.html',
+                    'clientes': 'modules/clientes.html',
+                    'proveedores': 'modules/proveedores.html',
+                    'facturas': 'modules/facturas.html',
+                    'contabilidad': 'modules/contabilidad.html',
+                    'finanzas': 'modules/finanzas.html',
+                    'reportes': 'modules/reportes.html',
+                    'configuracion': 'modules/configuracion.html',
+                    'soporte': 'modules/soporte.html'
+                };
 
-            if (modulePages[module]) {
-                window.location.href = modulePages[module];
-            } else {
-                console.log(`Navegando a módulo: ${module}`);
-                alert(`Módulo "${module}" en desarrollo. Próximamente disponible.`);
+                if (modulePages[module]) {
+                    const url = modulePages[module];
+                    console.log(`✅ Navegando a: ${url}`);
+                    window.location.href = url;
+                } else {
+                    console.warn(`⚠️ Módulo no encontrado: ${module}`);
+                    alert(`Módulo "${module}" en desarrollo. Próximamente disponible.`);
+                }
+            } catch (error) {
+                console.error('❌ Error en navegación:', error);
+                alert(`Error al navegar a ${module}. Por favor, intenta de nuevo.`);
             }
+        }
+
+        // Función para mostrar notificación de carga
+        function showLoadingNotification(message) {
+            const notification = document.createElement('div');
+            notification.id = 'loadingNotification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: linear-gradient(135deg, #4299e1, #3182ce);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1003;
+                max-width: 280px;
+                font-size: 0.85rem;
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remover después de 2 segundos
+            setTimeout(() => {
+                const notif = document.getElementById('loadingNotification');
+                if (notif) notif.remove();
+            }, 2000);
         }
 
         // Animación de entrada para las estadísticas
@@ -1635,6 +1674,93 @@
                 }
             });
         }
+
+        // Método alternativo usando event listeners (más robusto)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Limpiar hash de la URL al cargar la página
+            if (window.location.hash) {
+                console.log('🧹 Limpiando hash de la URL...');
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            
+            // Agregar event listeners a todos los elementos de navegación con data-module
+            const navItems = document.querySelectorAll('.nav-item[data-module]');
+            console.log(`📝 Configurando ${navItems.length} enlaces de navegación...`);
+            
+            navItems.forEach(item => {
+                const moduleName = item.getAttribute('data-module');
+                const href = item.getAttribute('href');
+                
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log(`🔗 Navegando a módulo: ${moduleName}`);
+                    console.log(`📄 URL: ${href}`);
+                    
+                    // Remover clase active de todos los elementos
+                    document.querySelectorAll('.nav-item').forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    
+                    // Agregar clase active al elemento actual
+                    this.classList.add('active');
+                    
+                    // Mostrar notificación de carga
+                    showLoadingNotification(`Cargando ${moduleName}...`);
+                    
+                    // Navegar a la página
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 100);
+                });
+                
+                console.log(`✅ Configurado: ${moduleName} -> ${href}`);
+            });
+            
+            console.log('✅ Event listeners de navegación configurados');
+            
+            // Función de diagnóstico (solo para debugging)
+            window.testNavigation = function() {
+                console.log('🔍 Iniciando diagnóstico de navegación...');
+                
+                const modules = ['ventas', 'inventario', 'compras', 'clientes'];
+                modules.forEach(module => {
+                    console.log(`Testing ${module}...`);
+                    // No navegamos realmente, solo verificamos que la función funcione
+                    try {
+                        const modulePages = {
+                            'inventario': 'modules/inventario.html',
+                            'ventas': 'modules/ventas.html',
+                            'compras': 'modules/compras.html',
+                            'clientes': 'modules/clientes.html'
+                        };
+                        if (modulePages[module]) {
+                            console.log(`✅ ${module}: OK - ${modulePages[module]}`);
+                        } else {
+                            console.log(`❌ ${module}: No encontrado`);
+                        }
+                    } catch (error) {
+                        console.error(`❌ ${module}: Error - ${error.message}`);
+                    }
+                });
+                
+                console.log('🔍 Diagnóstico completado. Para probar navegación real, usa: testNavigation.goTo("ventas")');
+            };
+            
+            // Función para navegar específicamente (testing)
+            window.testNavigation.goTo = function(module) {
+                console.log(`🚀 Navegación de prueba a: ${module}`);
+                navigateToModule(module);
+            };
+            
+            // Ejecutar diagnóstico automáticamente
+            setTimeout(() => {
+                if (window.location.search.includes('debug=true')) {
+                    window.testNavigation();
+                }
+            }, 2000);
+        });
     </script>
 </body>
 </html>
