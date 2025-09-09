@@ -1034,12 +1034,67 @@
             console.log('Contadores calculados:', categoryCounters);
         }
 
+        // Función para limpiar datos corruptos
+        function cleanCorruptedData() {
+            const initialLength = inventoryData.length;
+            
+            // Filtrar productos válidos
+            inventoryData = inventoryData.filter(product => {
+                return product && 
+                       product.name && 
+                       product.name.trim() !== '' && 
+                       product.name !== 'Sin nombre' &&
+                       product.code && 
+                       product.code.trim() !== '' && 
+                       product.code !== 'N/A' &&
+                       product.id;
+            });
+            
+            // Eliminar duplicados por código
+            const seen = new Set();
+            inventoryData = inventoryData.filter(product => {
+                if (seen.has(product.code)) {
+                    console.log('🗑️ Eliminando producto duplicado:', product.code);
+                    return false;
+                }
+                seen.add(product.code);
+                return true;
+            });
+            
+            const finalLength = inventoryData.length;
+            
+            if (initialLength > finalLength) {
+                console.log(`🧹 Limpieza completada: ${initialLength - finalLength} productos corruptos/duplicados eliminados`);
+                // Guardar los datos limpios
+                saveDataToLocalStorage();
+            }
+        }
+
         // Función para normalizar datos de productos
         function normalizeProductData(products) {
-            return products.map(product => ({
-                id: product.id || Date.now(),
-                name: product.name || 'Sin nombre',
-                code: product.code || 'N/A',
+            if (!products || !Array.isArray(products)) {
+                console.warn('⚠️ Productos inválidos recibidos:', products);
+                return [];
+            }
+            
+            // Filtrar productos válidos antes de normalizar
+            const validProducts = products.filter(product => {
+                // Un producto es válido si tiene al menos nombre y código válidos
+                return product && 
+                       product.name && 
+                       product.name.trim() !== '' && 
+                       product.name !== 'Sin nombre' &&
+                       product.code && 
+                       product.code.trim() !== '' && 
+                       product.code !== 'N/A';
+            });
+            
+            console.log(`Filtrado: ${products.length} productos recibidos, ${validProducts.length} válidos`);
+            
+            return validProducts.map(product => ({
+                id: product.id || Date.now() + Math.random(),
+                name: product.name.trim(),
+                code: product.code.trim(),
                 category: product.category || 'Otros',
                 stock: parseInt(product.stock) || 0,
                 minStock: parseInt(product.minStock) || 0,
@@ -1845,6 +1900,16 @@
         document.getElementById('productForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            // Prevenir envíos múltiples
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn.disabled) {
+                console.log('⚠️ Envío ya en progreso, ignorando...');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Procesando...';
+            
             console.log('=== INTENTANDO AGREGAR/EDITAR PRODUCTO ===');
             console.log('Estado actual del inventario:', inventoryData.length, 'productos');
             console.log('currentEditId:', currentEditId);
@@ -1863,18 +1928,36 @@
             // Validar campos requeridos
             if (!name || !code || !category || isNaN(costPrice) || isNaN(salePrice) || isNaN(stock) || isNaN(minStock) || !supplier) {
                 alert('Por favor, complete todos los campos requeridos.');
+                // Restaurar botón
+                submitBtn.disabled = false;
+                submitBtn.textContent = currentEditId ? 'Actualizar Producto' : 'Agregar Producto';
+                return;
+            }
+
+            // Validar que no sean valores por defecto problemáticos
+            if (name.toLowerCase() === 'sin nombre' || code.toLowerCase() === 'n/a') {
+                alert('Por favor, ingrese un nombre y código válidos para el producto.');
+                // Restaurar botón
+                submitBtn.disabled = false;
+                submitBtn.textContent = currentEditId ? 'Actualizar Producto' : 'Agregar Producto';
                 return;
             }
 
             // Validar que los precios sean positivos
             if (costPrice < 0 || salePrice < 0) {
                 alert('Los precios deben ser valores positivos.');
+                // Restaurar botón
+                submitBtn.disabled = false;
+                submitBtn.textContent = currentEditId ? 'Actualizar Producto' : 'Agregar Producto';
                 return;
             }
 
             // Validar que el precio de venta sea mayor al de compra
             if (salePrice <= costPrice) {
                 alert('El precio de venta debe ser mayor al precio de compra.');
+                // Restaurar botón
+                submitBtn.disabled = false;
+                submitBtn.textContent = currentEditId ? 'Actualizar Producto' : 'Agregar Producto';
                 return;
             }
 
@@ -1897,10 +1980,16 @@
                     const stillExists = inventoryData.find(p => p.code === code);
                     if (stillExists) {
                         alert('Error al generar código único. Por favor, intente nuevamente.');
+                        // Restaurar botón
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = currentEditId ? 'Actualizar Producto' : 'Agregar Producto';
                         return;
                     }
                 } else {
                     alert('Ya existe un producto con este código. Por favor, use otro código.');
+                    // Restaurar botón
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = currentEditId ? 'Actualizar Producto' : 'Agregar Producto';
                     return;
                 }
             }
@@ -1928,6 +2017,9 @@
                     console.log('Producto editado:', inventoryData[index]);
                 } else {
                     alert('Error: No se pudo encontrar el producto a editar.');
+                    // Restaurar botón
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Actualizar Producto';
                     return;
                 }
             } else {
@@ -1964,6 +2056,10 @@
             // Mostrar mensaje de confirmación
             const action = currentEditId ? 'editado' : 'agregado';
             alert(`Producto ${action} exitosamente.`);
+            
+            // Restaurar botón
+            submitBtn.disabled = false;
+            submitBtn.textContent = currentEditId ? 'Actualizar Producto' : 'Agregar Producto';
         });
 
         // Cerrar modal al hacer clic fuera
@@ -2039,6 +2135,11 @@
             }
             
             console.log('Datos finales cargados:', inventoryData.length, 'productos');
+            
+            // Limpiar datos corruptos y duplicados
+            cleanCorruptedData();
+            
+            console.log('Después de limpieza:', inventoryData.length, 'productos');
             
             // Calcular contadores basándose en códigos existentes
             calculateCategoryCounters();
@@ -2198,6 +2299,20 @@
             }
         }
 
+        // Función de emergencia para limpiar productos problemáticos
+        function emergencyCleanup() {
+            if (confirm('¿Estás seguro de que deseas eliminar TODOS los productos con datos problemáticos?\n\nEsto eliminará productos que tengan:\n- Nombre: "Sin nombre"\n- Código: "N/A"\n- Datos vacíos o corruptos\n- Códigos duplicados')) {
+                const before = inventoryData.length;
+                cleanCorruptedData();
+                const after = inventoryData.length;
+                
+                renderTable();
+                updateStats();
+                
+                alert(`Limpieza completada:\n• Productos antes: ${before}\n• Productos después: ${after}\n• Eliminados: ${before - after}`);
+            }
+        }
+
         // Función para exportar datos a JSON (backup)
         function exportDataAsJSON() {
             const dataToExport = {
@@ -2221,6 +2336,9 @@
         window.exportDataAsJSON = exportDataAsJSON;
         window.saveDataToLocalStorage = saveDataToLocalStorage;
         window.loadDataFromLocalStorage = loadDataFromLocalStorage;
+        window.cleanCorruptedData = cleanCorruptedData;
+        window.debugInventory = debugInventory;
+        window.emergencyCleanup = emergencyCleanup;
     </script>
 </body>
 </html>
