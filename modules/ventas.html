@@ -1041,26 +1041,44 @@
         }
 
         // Funciones para persistencia de datos
+        // Funciones para persistencia de datos con Firebase Auto-Sync
         async function saveDataToLocalStorage() {
             try {
-                // Guardar usando las funciones compartidas de Firebase
-                if (window.firebaseUtils) {
-                    await window.firebaseUtils.saveData('salesData', { data: salesData });
-                    await window.firebaseUtils.saveData('invoiceCounter', { counter: invoiceCounter });
-                } else {
-                    // Respaldo con localStorage tradicional
-                    localStorage.setItem('salesData', JSON.stringify(salesData));
-                    localStorage.setItem('invoiceCounter', invoiceCounter.toString());
-                }
+                // Marcar timestamp de última modificación
+                const currentTime = new Date().toISOString();
+                const salesDataToSave = salesData.map(sale => ({
+                    ...sale,
+                    lastModified: currentTime
+                }));
                 
-                console.log('💾 Datos de ventas guardados');
+                // Guardar en localStorage
+                localStorage.setItem('ventas', JSON.stringify(salesDataToSave));
+                localStorage.setItem('invoiceCounter', invoiceCounter.toString());
+                console.log('💾 Datos de ventas guardados en localStorage');
+                
+                // Auto-sincronización con Firebase usando las nuevas utilidades
+                if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
+                    try {
+                        // Usar la nueva función de guardado de Firebase
+                        await window.firebaseUtils.saveData('ventas', salesDataToSave);
+                        console.log('🔥 Ventas auto-sincronizadas con Firebase');
+                        showSyncNotification('✅ Ventas sincronizadas automáticamente', 'success');
+                    } catch (error) {
+                        console.error('❌ Error en auto-sincronización:', error);
+                        showSyncNotification('⚠️ Error en sincronización automática', 'warning');
+                    }
+                } else {
+                    showSyncNotification('� Datos guardados localmente (Firebase deshabilitado)', 'info');
+                }
                 
                 // Notificar al dashboard sobre la actualización
                 notifyDashboardUpdate();
+                
             } catch (error) {
                 console.error('❌ Error al guardar datos de ventas:', error);
+                showSyncNotification('❌ Error al guardar datos', 'error');
                 // Respaldo de emergencia
-                localStorage.setItem('salesData', JSON.stringify(salesData));
+                localStorage.setItem('ventas', JSON.stringify(salesData));
                 localStorage.setItem('invoiceCounter', invoiceCounter.toString());
             }
         }
@@ -1068,42 +1086,53 @@
         // Función para cargar datos al inicializar
         async function loadDataFromLocalStorage() {
             try {
-                if (window.firebaseUtils) {
-                    // Cargar desde Firebase primero
-                    const salesResponse = await window.firebaseUtils.loadData('salesData');
-                    if (salesResponse && salesResponse.length > 0) {
-                        // Si es un documento con estructura { data: [...] }
-                        const firstItem = salesResponse[0];
-                        if (firstItem.data && Array.isArray(firstItem.data)) {
-                            salesData = firstItem.data;
-                        } else {
-                            salesData = salesResponse;
+                console.log('🔄 Cargando datos de ventas...');
+                
+                // Cargar desde Firebase usando auto-sync
+                if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
+                    try {
+                        console.log('🔥 Intentando cargar desde Firebase...');
+                        const firebaseData = await window.firebaseUtils.loadData('ventas');
+                        
+                        if (firebaseData && Array.isArray(firebaseData) && firebaseData.length > 0) {
+                            salesData = firebaseData;
+                            console.log('🔥 Datos cargados desde Firebase:', salesData.length, 'ventas');
+                            showSyncNotification('✅ Ventas cargadas desde la nube', 'success');
+                            return true;
                         }
-                    }
-                    
-                    const counterResponse = await window.firebaseUtils.loadData('invoiceCounter');
-                    if (counterResponse && counterResponse.length > 0) {
-                        invoiceCounter = counterResponse[0].counter || 1001;
-                    }
-                } else {
-                    // Respaldo con localStorage
-                    const savedSalesData = localStorage.getItem('salesData');
-                    const savedInvoiceCounter = localStorage.getItem('invoiceCounter');
-                    
-                    if (savedSalesData) {
-                        salesData = JSON.parse(savedSalesData);
-                    }
-                    
-                    if (savedInvoiceCounter) {
-                        invoiceCounter = parseInt(savedInvoiceCounter);
+                    } catch (error) {
+                        console.warn('⚠️ Error cargando desde Firebase:', error);
                     }
                 }
                 
-                console.log('📡 Datos de ventas cargados:', salesData.length, 'registros');
+                // Fallback: cargar desde localStorage
+                console.log('📱 Cargando desde localStorage...');
+                const savedData = localStorage.getItem('ventas');
+                const legacySavedData = localStorage.getItem('salesData'); // Compatibilidad
+                const savedCounter = localStorage.getItem('invoiceCounter');
+                
+                if (savedData) {
+                    salesData = JSON.parse(savedData);
+                    console.log('📱 Datos cargados desde localStorage:', salesData.length, 'ventas');
+                    showSyncNotification('📱 Ventas cargadas localmente', 'info');
+                } else if (legacySavedData) {
+                    // Migrar datos del formato anterior
+                    salesData = JSON.parse(legacySavedData);
+                    console.log('🔄 Migrando datos del formato anterior:', salesData.length, 'ventas');
+                    // Guardar en el nuevo formato
+                    setTimeout(() => saveDataToLocalStorage(), 1000);
+                }
+                
+                if (savedCounter) {
+                    invoiceCounter = parseInt(savedCounter) || 1001;
+                }
+                
+                console.log('� Datos de ventas cargados:', salesData.length, 'registros');
                 return salesData.length > 0;
                 
             } catch (error) {
                 console.error('❌ Error al cargar datos de ventas:', error);
+                showSyncNotification('❌ Error al cargar datos', 'error');
                 return false;
             }
         }
@@ -2204,14 +2233,8 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('=== INICIALIZANDO MÓDULO DE VENTAS ===');
             
-            // Configurar listener de Firebase para sincronización en tiempo real
-            if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
-                window.firebaseUtils.setupListener('salesData', (data) => {
-                    console.log('🔄 Datos de ventas actualizados desde Firebase');
-                    renderTable();
-                    updateStats();
-                });
-            }
+            // Esperar un momento para que Firebase se inicialice
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             // Cargar datos desde Firebase/localStorage
             await loadDataFromLocalStorage();
@@ -2232,7 +2255,124 @@
             
             renderTable();
             updateStats();
+            
+            // Configurar auto-sincronización con Firebase
+            setupVentasAutoSync();
         });
+
+        // Función para configurar la sincronización automática específica de ventas
+        function setupVentasAutoSync() {
+            console.log('🔄 Configurando auto-sincronización para ventas...');
+            
+            // Verificar si Firebase está disponible
+            if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
+                console.log('🔥 Firebase habilitado - configurando listeners...');
+                
+                // Escuchar cambios en tiempo real desde otros dispositivos
+                window.addEventListener('ventasUpdated', function(event) {
+                    console.log('� Datos de ventas actualizados desde otro dispositivo:', event.detail);
+                    
+                    if (event.detail && Array.isArray(event.detail)) {
+                        // Solo actualizar si realmente hay cambios
+                        if (JSON.stringify(salesData) !== JSON.stringify(event.detail)) {
+                            salesData = event.detail;
+                            
+                            // Re-renderizar la tabla con los nuevos datos
+                            renderTable();
+                            updateStats();
+                            
+                            // Mostrar notificación de sincronización
+                            showSyncNotification('🔄 Ventas actualizadas desde otro dispositivo', 'info');
+                            console.log('✅ Tabla actualizada con datos sincronizados');
+                        }
+                    }
+                });
+                
+                // Configurar sincronización periódica (cada 30 segundos)
+                setInterval(async () => {
+                    if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
+                        try {
+                            // Verificar si hay cambios en Firebase
+                            const firebaseData = await window.firebaseUtils.loadData('ventas');
+                            if (firebaseData && Array.isArray(firebaseData)) {
+                                // Comparar y actualizar si es necesario
+                                if (JSON.stringify(salesData) !== JSON.stringify(firebaseData)) {
+                                    console.log('🔄 Detectados cambios en Firebase, actualizando ventas...');
+                                    salesData = firebaseData;
+                                    renderTable();
+                                    updateStats();
+                                    showSyncNotification('🔄 Ventas sincronizadas automáticamente', 'info');
+                                }
+                            }
+                        } catch (error) {
+                            console.log('ℹ️ Verificación periódica: sin cambios remotos en ventas');
+                        }
+                    }
+                }, 30000);
+                
+                console.log('✅ Auto-sincronización de ventas configurada');
+                showSyncNotification('🌐 Auto-sincronización activada para ventas', 'success');
+                
+            } else {
+                console.log('⚠️ Firebase no disponible, trabajando solo localmente');
+                showSyncNotification('📱 Trabajando en modo local (sin sincronización)', 'warning');
+            }
+        }
+        
+        // Función mejorada para mostrar notificaciones de sincronización
+        function showSyncNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `sync-notification sync-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 16px;
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 10000;
+                opacity: 0;
+                transition: all 0.3s ease;
+                max-width: 350px;
+                transform: translateX(100%);
+                ${type === 'success' ? 'background: linear-gradient(135deg, #4CAF50, #45a049);' : 
+                  type === 'error' ? 'background: linear-gradient(135deg, #f44336, #d32f2f);' : 
+                  type === 'warning' ? 'background: linear-gradient(135deg, #ff9800, #f57c00);' : 
+                  'background: linear-gradient(135deg, #2196F3, #1976d2);'}
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 
+                                   type === 'error' ? 'fa-exclamation-circle' : 
+                                   type === 'warning' ? 'fa-exclamation-triangle' : 
+                                   'fa-info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animación de entrada
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remover después de 4 segundos
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
     </script>
 </body>
 </html>

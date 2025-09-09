@@ -876,34 +876,47 @@
             }
         }
 
-        // Funciones para persistencia de datos con Firebase
+        // Funciones para persistencia de datos con Firebase Auto-Sync
         async function saveDataToLocalStorage() {
             try {
-                // Guardar en localStorage como respaldo
-                localStorage.setItem('inventoryData', JSON.stringify(inventoryData));
-                localStorage.setItem('categoryCounters', JSON.stringify(categoryCounters));
-                console.log('Datos guardados en localStorage');
+                // Marcar timestamp de última modificación
+                const currentTime = new Date().toISOString();
+                const dataToSave = {
+                    inventoryData: inventoryData.map(item => ({
+                        ...item,
+                        lastModified: currentTime
+                    })),
+                    categoryCounters: categoryCounters,
+                    lastUpdated: currentTime,
+                    syncSource: 'inventario_module'
+                };
                 
-                // Guardar en Firebase si está disponible
-                if (window.saveToFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                // Guardar en localStorage
+                localStorage.setItem('inventario', JSON.stringify(dataToSave.inventoryData));
+                localStorage.setItem('categoryCounters', JSON.stringify(categoryCounters));
+                console.log('💾 Datos guardados en localStorage');
+                
+                // Auto-sincronización con Firebase usando las nuevas utilidades
+                if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
                     try {
-                        await window.saveToFirebase('inventario', {
-                            inventoryData: inventoryData,
-                            categoryCounters: categoryCounters,
-                            lastUpdated: new Date().toISOString()
-                        });
-                        console.log('🔥 Datos de inventario sincronizados con Firebase');
-                        showSyncNotification('✅ Inventario sincronizado con la nube');
+                        // Usar la nueva función de guardado de Firebase
+                        await window.firebaseUtils.saveData('inventario', dataToSave.inventoryData);
+                        console.log('🔥 Inventario auto-sincronizado con Firebase');
+                        showSyncNotification('✅ Inventario sincronizado automáticamente', 'success');
                     } catch (error) {
-                        console.error('❌ Error al sincronizar con Firebase:', error);
-                        showSyncNotification('⚠️ Error en sincronización - usando datos locales');
+                        console.error('❌ Error en auto-sincronización:', error);
+                        showSyncNotification('⚠️ Error en sincronización automática', 'warning');
                     }
+                } else {
+                    showSyncNotification('📱 Datos guardados localmente (Firebase deshabilitado)', 'info');
                 }
                 
                 // Notificar al dashboard sobre la actualización
                 notifyDashboardUpdate();
+                
             } catch (error) {
-                console.error('Error al guardar datos:', error);
+                console.error('❌ Error al guardar datos:', error);
+                showSyncNotification('❌ Error al guardar datos', 'error');
             }
         }
 
@@ -931,72 +944,57 @@
 
         async function loadDataFromLocalStorage() {
             try {
-                console.log('🔥 Intentando cargar datos desde Firebase...');
+                console.log('� Cargando datos de inventario...');
                 
-                // Intentar cargar desde Firebase primero
-                if (window.loadFromFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                // Cargar desde Firebase usando auto-sync
+                if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
                     try {
-                        const firebaseData = await window.loadFromFirebase('inventario');
-                        if (firebaseData && firebaseData.inventoryData) {
-                            inventoryData = normalizeProductData(firebaseData.inventoryData);
-                            categoryCounters = firebaseData.categoryCounters || categoryCounters;
-                            console.log('🔥 Datos de inventario cargados desde Firebase:', inventoryData.length, 'productos');
-                            showSyncNotification('✅ Inventario sincronizado desde la nube');
+                        console.log('🔥 Intentando cargar desde Firebase...');
+                        const firebaseData = await window.firebaseUtils.loadData('inventario');
+                        
+                        if (firebaseData && Array.isArray(firebaseData) && firebaseData.length > 0) {
+                            inventoryData = normalizeProductData(firebaseData);
+                            console.log('🔥 Datos cargados desde Firebase:', inventoryData.length, 'productos');
+                            showSyncNotification('✅ Inventario cargado desde la nube', 'success');
+                            
+                            // También cargar contadores de categoría desde localStorage
+                            const savedCounters = localStorage.getItem('categoryCounters');
+                            if (savedCounters) {
+                                categoryCounters = JSON.parse(savedCounters);
+                            }
+                            
                             return;
                         }
                     } catch (error) {
-                        console.warn('⚠️ No se pudieron cargar datos desde Firebase:', error);
+                        console.warn('⚠️ Error cargando desde Firebase:', error);
                     }
                 }
                 
-                // Fallback a localStorage
-                const savedInventoryData = localStorage.getItem('inventoryData');
-                const savedCategoryCounters = localStorage.getItem('categoryCounters');
+                // Fallback: cargar desde localStorage
+                console.log('� Cargando desde localStorage...');
+                const savedData = localStorage.getItem('inventario');
+                const savedCounters = localStorage.getItem('categoryCounters');
                 
-                console.log('📁 Intentando cargar datos desde localStorage...');
-                console.log('Datos de inventario encontrados:', !!savedInventoryData);
-                console.log('Contadores encontrados:', !!savedCategoryCounters);
-                
-                if (savedInventoryData) {
-                    const parsedData = JSON.parse(savedInventoryData);
-                    if (Array.isArray(parsedData) && parsedData.length > 0) {
-                        inventoryData = normalizeProductData(parsedData);
-                        console.log('Datos de inventario cargados desde localStorage:', inventoryData.length, 'productos');
-                    } else {
-                        console.log('Datos guardados vacíos o inválidos');
-                    }
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    inventoryData = normalizeProductData(parsedData);
+                    console.log('📱 Datos cargados desde localStorage:', inventoryData.length, 'productos');
+                    showSyncNotification('📱 Inventario cargado localmente', 'info');
                 } else {
-                    console.log('No se encontraron datos guardados en localStorage');
+                    console.log('🆕 No hay datos guardados, usando datos de ejemplo');
+                    loadSampleData();
                 }
                 
-                if (savedCategoryCounters) {
-                    categoryCounters = JSON.parse(savedCategoryCounters);
-                    console.log('Contadores de categoría cargados desde localStorage');
-                } else {
-                    console.log('No se encontraron contadores guardados');
-                }
-                
-                // Si tenemos datos pero no contadores, calcularlos
-                if (inventoryData.length > 0 && !savedCategoryCounters) {
-                    calculateCategoryCounters();
+                if (savedCounters) {
+                    categoryCounters = JSON.parse(savedCounters);
                 }
                 
             } catch (error) {
-                console.error('Error al cargar datos desde localStorage:', error);
-                // En caso de error, limpiar variables
-                inventoryData = [];
-                categoryCounters = {
-                    'Textil': 2,
-                    'Aluminio': 2,
-                    'MDF': 2,
-                    'Ceramica': 1,
-                    'Vidrio': 1,
-                    'Neopreno': 1,
-                    'Acrilico': 1
-                };
+                console.error('❌ Error al cargar datos:', error);
+                showSyncNotification('❌ Error al cargar datos', 'error');
+                loadSampleData(); // Cargar datos de ejemplo como último recurso
             }
-        }
-
+                
         function calculateCategoryCounters() {
             // Reiniciar contadores
             categoryCounters = {
@@ -1051,57 +1049,6 @@
                 supplier: product.supplier || 'Sin proveedor',
                 description: product.description || 'Sin descripción'
             }));
-        }
-
-        // Función para mostrar notificaciones de sincronización
-        function showSyncNotification(message) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                background: linear-gradient(135deg, #48bb78, #38a169);
-                color: white;
-                padding: 12px 16px;
-                border-radius: 8px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                z-index: 1002;
-                max-width: 280px;
-                font-size: 0.85rem;
-                animation: slideInRight 0.5s ease;
-            `;
-            
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-cloud"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remover notificación después de 3 segundos
-            setTimeout(() => {
-                notification.style.animation = 'slideOutRight 0.5s ease';
-                setTimeout(() => notification.remove(), 500);
-            }, 3000);
-            
-            // Agregar animaciones CSS si no existen
-            if (!document.getElementById('sync-animations')) {
-                const style = document.createElement('style');
-                style.id = 'sync-animations';
-                style.textContent = `
-                    @keyframes slideInRight {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                    @keyframes slideOutRight {
-                        from { transform: translateX(0); opacity: 1; }
-                        to { transform: translateX(100%); opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
         }
 
         function loadDefaultData() {
@@ -2114,7 +2061,129 @@
             updateStats();
             
             console.log('Página de inventario inicializada correctamente');
+            
+            // Configurar auto-sincronización con Firebase
+            setupInventoryAutoSync();
         });
+
+        // Función para configurar la sincronización automática específica del inventario
+        function setupInventoryAutoSync() {
+            console.log('🔄 Configurando auto-sincronización para inventario...');
+            
+            // Verificar si Firebase está disponible
+            if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
+                console.log('🔥 Firebase habilitado - configurando listeners...');
+                
+                // Escuchar cambios en tiempo real desde otros dispositivos
+                window.addEventListener('inventarioUpdated', function(event) {
+                    console.log('📨 Datos de inventario actualizados desde otro dispositivo:', event.detail);
+                    
+                    if (event.detail && Array.isArray(event.detail)) {
+                        // Actualizar datos locales con los nuevos datos
+                        const updatedData = normalizeProductData(event.detail);
+                        
+                        // Solo actualizar si realmente hay cambios
+                        if (JSON.stringify(inventoryData) !== JSON.stringify(updatedData)) {
+                            inventoryData = updatedData;
+                            
+                            // Re-renderizar la tabla con los nuevos datos
+                            renderTable();
+                            updateStats();
+                            
+                            // Mostrar notificación de sincronización
+                            showSyncNotification('🔄 Inventario actualizado desde otro dispositivo', 'info');
+                            console.log('✅ Tabla actualizada con datos sincronizados');
+                        }
+                    }
+                });
+                
+                // Configurar sincronización periódica (cada 30 segundos)
+                setInterval(async () => {
+                    if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
+                        try {
+                            // Verificar si hay cambios en Firebase
+                            const firebaseData = await window.firebaseUtils.loadData('inventario');
+                            if (firebaseData && Array.isArray(firebaseData)) {
+                                const normalizedData = normalizeProductData(firebaseData);
+                                
+                                // Comparar y actualizar si es necesario
+                                if (JSON.stringify(inventoryData) !== JSON.stringify(normalizedData)) {
+                                    console.log('🔄 Detectados cambios en Firebase, actualizando...');
+                                    inventoryData = normalizedData;
+                                    renderTable();
+                                    updateStats();
+                                    showSyncNotification('🔄 Inventario sincronizado automáticamente', 'info');
+                                }
+                            }
+                        } catch (error) {
+                            console.log('ℹ️ Verificación periódica: sin cambios remotos');
+                        }
+                    }
+                }, 30000);
+                
+                console.log('✅ Auto-sincronización de inventario configurada');
+                showSyncNotification('🌐 Auto-sincronización activada para inventario', 'success');
+                
+            } else {
+                console.log('⚠️ Firebase no disponible, trabajando solo localmente');
+                showSyncNotification('📱 Trabajando en modo local (sin sincronización)', 'warning');
+            }
+        }
+        
+        // Función mejorada para mostrar notificaciones de sincronización
+        function showSyncNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `sync-notification sync-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 16px;
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 10000;
+                opacity: 0;
+                transition: all 0.3s ease;
+                max-width: 350px;
+                transform: translateX(100%);
+                ${type === 'success' ? 'background: linear-gradient(135deg, #4CAF50, #45a049);' : 
+                  type === 'error' ? 'background: linear-gradient(135deg, #f44336, #d32f2f);' : 
+                  type === 'warning' ? 'background: linear-gradient(135deg, #ff9800, #f57c00);' : 
+                  'background: linear-gradient(135deg, #2196F3, #1976d2);'}
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 
+                                   type === 'error' ? 'fa-exclamation-circle' : 
+                                   type === 'warning' ? 'fa-exclamation-triangle' : 
+                                   'fa-info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animación de entrada
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remover después de 4 segundos
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
 
         // Función para limpiar datos (útil para desarrollo/testing)
         function clearAllData() {

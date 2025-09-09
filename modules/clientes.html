@@ -842,31 +842,41 @@
         }
 
         // Funciones para persistencia de datos
+        // Funciones para persistencia de datos con Firebase Auto-Sync
         async function saveDataToLocalStorage() {
             try {
-                // Guardar en localStorage como respaldo
-                localStorage.setItem('customersData', JSON.stringify(customersData));
-                console.log('Datos de clientes guardados en localStorage');
+                // Marcar timestamp de última modificación
+                const currentTime = new Date().toISOString();
+                const dataToSave = customersData.map(customer => ({
+                    ...customer,
+                    lastModified: currentTime
+                }));
                 
-                // Guardar en Firebase si está disponible
-                if (window.saveToFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                // Guardar en localStorage
+                localStorage.setItem('clientes', JSON.stringify(dataToSave));
+                console.log('💾 Datos de clientes guardados en localStorage');
+                
+                // Auto-sincronización con Firebase usando las nuevas utilidades
+                if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
                     try {
-                        await window.saveToFirebase('clientes', {
-                            customersData: customersData,
-                            lastUpdated: new Date().toISOString()
-                        });
-                        console.log('🔥 Datos de clientes sincronizados con Firebase');
-                        showSyncNotification('✅ Clientes sincronizados con la nube');
+                        // Usar la nueva función de guardado de Firebase
+                        await window.firebaseUtils.saveData('clientes', dataToSave);
+                        console.log('🔥 Clientes auto-sincronizados con Firebase');
+                        showSyncNotification('✅ Clientes sincronizados automáticamente', 'success');
                     } catch (error) {
-                        console.error('❌ Error al sincronizar clientes con Firebase:', error);
-                        showSyncNotification('⚠️ Error en sincronización - usando datos locales');
+                        console.error('❌ Error en auto-sincronización:', error);
+                        showSyncNotification('⚠️ Error en sincronización automática', 'warning');
                     }
+                } else {
+                    showSyncNotification('📱 Datos guardados localmente (Firebase deshabilitado)', 'info');
                 }
                 
                 // Notificar al dashboard sobre la actualización
                 notifyDashboardUpdate();
+                
             } catch (error) {
-                console.error('Error al guardar datos de clientes:', error);
+                console.error('❌ Error al guardar datos de clientes:', error);
+                showSyncNotification('❌ Error al guardar datos', 'error');
             }
         }
 
@@ -894,83 +904,104 @@
 
         async function loadDataFromLocalStorage() {
             try {
-                console.log('🔥 Intentando cargar datos de clientes desde Firebase...');
+                console.log('� Cargando datos de clientes...');
                 
-                // Intentar cargar desde Firebase primero
-                if (window.loadFromFirebase && window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                // Cargar desde Firebase usando auto-sync
+                if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
                     try {
-                        const firebaseData = await window.loadFromFirebase('clientes');
-                        if (firebaseData && firebaseData.customersData) {
-                            customersData = firebaseData.customersData;
-                            console.log('🔥 Datos de clientes cargados desde Firebase:', customersData.length, 'clientes');
-                            showSyncNotification('✅ Clientes sincronizados desde la nube');
+                        console.log('🔥 Intentando cargar desde Firebase...');
+                        const firebaseData = await window.firebaseUtils.loadData('clientes');
+                        
+                        if (firebaseData && Array.isArray(firebaseData) && firebaseData.length > 0) {
+                            customersData = firebaseData;
+                            console.log('🔥 Datos cargados desde Firebase:', customersData.length, 'clientes');
+                            showSyncNotification('✅ Clientes cargados desde la nube', 'success');
                             return true;
                         }
                     } catch (error) {
-                        console.warn('⚠️ No se pudieron cargar datos desde Firebase:', error);
+                        console.warn('⚠️ Error cargando desde Firebase:', error);
                     }
                 }
                 
-                // Fallback a localStorage
-                const savedCustomersData = localStorage.getItem('customersData');
-                if (savedCustomersData) {
-                    customersData = JSON.parse(savedCustomersData);
-                    console.log('📁 Datos de clientes cargados desde localStorage');
+                // Fallback: cargar desde localStorage
+                console.log('📱 Cargando desde localStorage...');
+                const savedData = localStorage.getItem('clientes');
+                const legacySavedData = localStorage.getItem('customersData'); // Compatibilidad con versión anterior
+                
+                if (savedData) {
+                    customersData = JSON.parse(savedData);
+                    console.log('� Datos cargados desde localStorage:', customersData.length, 'clientes');
+                    showSyncNotification('📱 Clientes cargados localmente', 'info');
+                    return true;
+                } else if (legacySavedData) {
+                    // Migrar datos del formato anterior
+                    customersData = JSON.parse(legacySavedData);
+                    console.log('🔄 Migrando datos del formato anterior:', customersData.length, 'clientes');
+                    // Guardar en el nuevo formato
+                    await saveDataToLocalStorage();
                     return true;
                 }
+                
             } catch (error) {
-                console.error('Error al cargar datos de clientes:', error);
+                console.error('❌ Error al cargar datos de clientes:', error);
+                showSyncNotification('❌ Error al cargar datos', 'error');
             }
             return false;
         }
 
-        // Función para mostrar notificaciones de sincronización
-        function showSyncNotification(message) {
+        // Función mejorada para mostrar notificaciones de sincronización
+        function showSyncNotification(message, type = 'info') {
             const notification = document.createElement('div');
+            notification.className = `sync-notification sync-${type}`;
             notification.style.cssText = `
                 position: fixed;
-                top: 80px;
+                top: 20px;
                 right: 20px;
-                background: linear-gradient(135deg, #48bb78, #38a169);
-                color: white;
                 padding: 12px 16px;
                 border-radius: 8px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                z-index: 1002;
-                max-width: 280px;
-                font-size: 0.85rem;
-                animation: slideInRight 0.5s ease;
+                color: white;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 10000;
+                opacity: 0;
+                transition: all 0.3s ease;
+                max-width: 350px;
+                transform: translateX(100%);
+                ${type === 'success' ? 'background: linear-gradient(135deg, #4CAF50, #45a049);' : 
+                  type === 'error' ? 'background: linear-gradient(135deg, #f44336, #d32f2f);' : 
+                  type === 'warning' ? 'background: linear-gradient(135deg, #ff9800, #f57c00);' : 
+                  'background: linear-gradient(135deg, #2196F3, #1976d2);'}
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             `;
             
             notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-cloud"></i>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 
+                                   type === 'error' ? 'fa-exclamation-circle' : 
+                                   type === 'warning' ? 'fa-exclamation-triangle' : 
+                                   'fa-info-circle'}"></i>
                     <span>${message}</span>
                 </div>
             `;
             
             document.body.appendChild(notification);
             
+            // Animación de entrada
             setTimeout(() => {
-                notification.style.animation = 'slideOutRight 0.5s ease';
-                setTimeout(() => notification.remove(), 500);
-            }, 3000);
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
             
-            if (!document.getElementById('sync-animations')) {
-                const style = document.createElement('style');
-                style.id = 'sync-animations';
-                style.textContent = `
-                    @keyframes slideInRight {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
+            // Remover después de 4 segundos
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
                     }
-                    @keyframes slideOutRight {
-                        from { transform: translateX(0); opacity: 1; }
-                        to { transform: translateX(100%); opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
+                }, 300);
+            }, 4000);
         }
 
         // Función para limpiar datos (solo para desarrollo/testing)
@@ -1342,10 +1373,79 @@
 
         // Inicializar página
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔄 Inicializando módulo de clientes...');
+            
+            // Esperar un momento para que Firebase se inicialice
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
             await initializeCustomers();
             renderTable();
             updateStats();
+            
+            console.log('✅ Módulo de clientes inicializado');
+            
+            // Configurar auto-sincronización con Firebase
+            setupClientesAutoSync();
         });
+
+        // Función para configurar la sincronización automática específica de clientes
+        function setupClientesAutoSync() {
+            console.log('🔄 Configurando auto-sincronización para clientes...');
+            
+            // Verificar si Firebase está disponible
+            if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
+                console.log('🔥 Firebase habilitado - configurando listeners...');
+                
+                // Escuchar cambios en tiempo real desde otros dispositivos
+                window.addEventListener('clientesUpdated', function(event) {
+                    console.log('📨 Datos de clientes actualizados desde otro dispositivo:', event.detail);
+                    
+                    if (event.detail && Array.isArray(event.detail)) {
+                        // Solo actualizar si realmente hay cambios
+                        if (JSON.stringify(customersData) !== JSON.stringify(event.detail)) {
+                            customersData = event.detail;
+                            
+                            // Re-renderizar la tabla con los nuevos datos
+                            renderTable();
+                            updateStats();
+                            
+                            // Mostrar notificación de sincronización
+                            showSyncNotification('🔄 Clientes actualizados desde otro dispositivo', 'info');
+                            console.log('✅ Tabla actualizada con datos sincronizados');
+                        }
+                    }
+                });
+                
+                // Configurar sincronización periódica (cada 30 segundos)
+                setInterval(async () => {
+                    if (window.firebaseUtils && window.firebaseUtils.isEnabled()) {
+                        try {
+                            // Verificar si hay cambios en Firebase
+                            const firebaseData = await window.firebaseUtils.loadData('clientes');
+                            if (firebaseData && Array.isArray(firebaseData)) {
+                                // Comparar y actualizar si es necesario
+                                if (JSON.stringify(customersData) !== JSON.stringify(firebaseData)) {
+                                    console.log('🔄 Detectados cambios en Firebase, actualizando clientes...');
+                                    customersData = firebaseData;
+                                    renderTable();
+                                    updateStats();
+                                    showSyncNotification('🔄 Clientes sincronizados automáticamente', 'info');
+                                }
+                            }
+                        } catch (error) {
+                            console.log('ℹ️ Verificación periódica: sin cambios remotos en clientes');
+                        }
+                    }
+                }, 30000);
+                
+                console.log('✅ Auto-sincronización de clientes configurada');
+                showSyncNotification('🌐 Auto-sincronización activada para clientes', 'success');
+                
+            } else {
+                console.log('⚠️ Firebase no disponible, trabajando solo localmente');
+                showSyncNotification('📱 Trabajando en modo local (sin sincronización)', 'warning');
+            }
+        }
     </script>
 </body>
 </html>
