@@ -1000,6 +1000,84 @@
             }
         });
 
+        // Función para configurar listeners de sincronización en el dashboard
+        function setupDashboardSyncListeners() {
+            console.log('🔄 Configurando listeners de sincronización en dashboard...');
+            
+            // Listeners para módulos principales
+            const modulesToSync = ['inventario', 'clientes', 'ventas', 'compras', 'proveedores'];
+            
+            modulesToSync.forEach(moduleName => {
+                window.addEventListener(`${moduleName}Updated`, function(event) {
+                    console.log(`🔄 Dashboard recibió actualización de ${moduleName}`);
+                    
+                    // Actualizar estadísticas del dashboard
+                    setTimeout(() => {
+                        updateDashboard();
+                        showSyncNotification(`✅ ${moduleName} sincronizado en todos los dispositivos`, 'success');
+                    }, 100);
+                });
+            });
+            
+            // Listener general para cualquier cambio de Firebase
+            window.addEventListener('firebaseDataUpdated', function(event) {
+                console.log('🔄 Datos actualizados desde Firebase:', event.detail);
+                setTimeout(updateDashboard, 200);
+            });
+            
+            console.log('✅ Listeners de sincronización configurados');
+        }
+        
+        // Función para mostrar notificaciones de sincronización en el dashboard
+        function showSyncNotification(message, type = 'info') {
+            console.log(`📱 ${message}`);
+            
+            // Crear elemento de notificación temporal
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : '#3b82f6'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            // Agregar estilos de animación si no existen
+            if (!document.getElementById('syncNotificationStyles')) {
+                const styles = document.createElement('style');
+                styles.id = 'syncNotificationStyles';
+                styles.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(styles);
+            }
+            
+            document.body.appendChild(notification);
+            
+            // Remover después de 3 segundos
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
         // Función para destacar el elemento activo del menú
         function setActiveNavItem(element) {
             // Remover clase active de todos los elementos
@@ -1023,6 +1101,9 @@
 
             // Inicializar dashboard
             initializeDashboard();
+            
+            // Configurar listeners para sincronización multi-dispositivo
+            setupDashboardSyncListeners();
             
             // Actualizar dashboard cada 30 segundos
             setInterval(updateDashboard, 30000);
@@ -1098,27 +1179,23 @@
                 isFirebaseEnabled = true;
                 console.log('✅ Firebase inicializado correctamente');
                 console.log('🔥 Proyecto:', firebaseConfig.projectId);
-                console.log('📊 Firestore disponible');
-                console.log('⚡ Realtime Database disponible');
                 
-                // Mostrar indicador de Firebase conectado
-                showFirebaseStatus(true);
+                // Configurar funciones de utilidad de Firebase
+                setupFirebaseUtils();
                 
-                // Cargar datos desde Firebase
-                loadDataFromFirebase();
+                // Configurar auto-sincronización si existe la función
+                if (typeof setupAutoSync === 'function') {
+                    setupAutoSync();
+                    console.log('🔄 Auto-sincronización activada');
+                } else {
+                    console.warn('⚠️ setupAutoSync no disponible');
+                }
                 
-                // Migrar datos existentes de localStorage a Firebase (solo una vez)
-                migrateLocalDataToFirebase();
-                
-                // Configurar sincronización en tiempo real
-                setupRealtimeSync();
-                
+                return true;
             } catch (error) {
-                console.warn('⚠️ Firebase no disponible, usando localStorage:', error);
+                console.error('❌ Error inicializando Firebase:', error);
                 isFirebaseEnabled = false;
-                showFirebaseStatus(false);
-                // Continuar con localStorage como respaldo
-                loadDataFromLocalStorage();
+                return false;
             }
         }
 

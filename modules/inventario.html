@@ -903,6 +903,12 @@
                         await window.firebaseUtils.saveData('inventario', dataToSave.inventoryData);
                         console.log('🔥 Inventario auto-sincronizado con Firebase');
                         showSyncNotification('✅ Inventario sincronizado automáticamente', 'success');
+                        
+                        // Notificar cambios para sincronización bidireccional
+                        window.dispatchEvent(new CustomEvent('inventarioChanged', {
+                            detail: dataToSave.inventoryData
+                        }));
+                        
                     } catch (error) {
                         console.error('❌ Error en auto-sincronización:', error);
                         showSyncNotification('⚠️ Error en sincronización automática', 'warning');
@@ -2072,6 +2078,17 @@
         // Inicializar página
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🔥 Inicializando módulo de inventario...');
+            
+            // Configurar listener para sincronización desde otros dispositivos
+            window.addEventListener('inventarioUpdated', (event) => {
+                if (event.detail && event.detail.source === 'firebase') {
+                    console.log('🔄 Actualizaciones recibidas desde otro dispositivo');
+                    inventoryData = event.detail.data || [];
+                    renderTable();
+                    updateStats();
+                    showSyncNotification('🔄 Inventario actualizado desde otro dispositivo', 'info');
+                }
+            });
             
             // Esperar un momento para que Firebase se inicialice
             await new Promise(resolve => setTimeout(resolve, 1000));

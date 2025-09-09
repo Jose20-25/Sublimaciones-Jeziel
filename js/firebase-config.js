@@ -263,11 +263,14 @@ function checkFirebaseConnection() {
     });
 }
 
-// Función para configurar sincronización automática
+// Función para configurar sincronización automática mejorada
 function setupAutoSync() {
-    if (!isFirebaseEnabled) return;
+    if (!isFirebaseEnabled) {
+        console.log('📱 Trabajando en modo local - Firebase no disponible');
+        return;
+    }
     
-    console.log('🔄 Configurando sincronización automática...');
+    console.log('🔄 Configurando sincronización automática mejorada...');
     
     // Módulos que requieren sincronización automática
     const syncModules = [
@@ -280,16 +283,21 @@ function setupAutoSync() {
     ];
     
     syncModules.forEach(module => {
-        setupRealtimeSync(module);
+        setupBidirectionalSync(module);
     });
+    
+    // Configurar heartbeat para mantener conexión
+    setupSyncHeartbeat();
+    
+    console.log('✅ Sincronización automática configurada para todos los módulos');
 }
 
-// Función para configurar listener en tiempo real para un módulo
-function setupRealtimeSync(moduleName) {
+// Función mejorada para configurar sincronización bidireccional
+function setupBidirectionalSync(moduleName) {
     try {
-        console.log(`🔗 Configurando sync para: ${moduleName}`);
+        console.log(`🔗 Configurando sync bidireccional para: ${moduleName}`);
         
-        // Listener en Firestore para cambios en tiempo real
+        // 1. Listener para cambios remotos (Firebase -> Local)
         const unsubscribe = db.collection(moduleName).onSnapshot((snapshot) => {
             if (snapshot.empty) {
                 console.log(`📭 No hay datos en Firebase para: ${moduleName}`);
@@ -300,7 +308,8 @@ function setupRealtimeSync(moduleName) {
             snapshot.forEach((doc) => {
                 firebaseData.push({
                     id: doc.id,
-                    ...doc.data()
+                    ...doc.data(),
+                    _lastModified: doc.data()._lastModified || Date.now()
                 });
             });
             
@@ -309,38 +318,240 @@ function setupRealtimeSync(moduleName) {
             const lastSync = lastSyncTime.get(moduleName) || 0;
             const now = Date.now();
             
-            // Evitar loops de sincronización (solo sincronizar si han pasado más de 2 segundos)
-            if (now - lastSync < 2000) {
+            // Evitar loops de sincronización
+            if (now - lastSync < 3000) {
+                console.log(`⏸️ Sync pausado para evitar loop: ${moduleName}`);
                 return;
             }
             
-            // Resolver conflictos entre datos locales y de Firebase
-            const resolvedData = resolveDataConflicts(localData, firebaseData, moduleName);
+            // Fusionar datos de ambas fuentes
+            const mergedData = mergeDataSources(localData, firebaseData, moduleName);
             
             // Solo actualizar si hay diferencias reales
-            if (JSON.stringify(localData) !== JSON.stringify(resolvedData)) {
-                console.log(`🔄 Sincronizando ${moduleName} desde Firebase...`);
-                localStorage.setItem(moduleName, JSON.stringify(resolvedData));
+            if (hasRealChanges(localData, mergedData)) {
+                console.log(`🔄 Actualizando ${moduleName} desde Firebase...`);
+                localStorage.setItem(moduleName, JSON.stringify(mergedData));
                 lastSyncTime.set(moduleName, now);
                 
-                // Notificar a la interfaz sobre cambios
-                window.dispatchEvent(new CustomEvent(`${moduleName}Updated`, {
-                    detail: resolvedData
-                }));
+                // Notificar a la interfaz
+                notifyInterfaceUpdate(moduleName, mergedData);
                 
-                // Mostrar notificación de sincronización
-                showSyncNotification(`✅ ${moduleName} sincronizado`, 'success');
+                // Mostrar notificación
+                showSyncNotification(`🔄 ${moduleName} sincronizado desde otro dispositivo`, 'info');
             }
         }, (error) => {
             console.error(`❌ Error en listener de ${moduleName}:`, error);
+            showSyncNotification(`⚠️ Error de conexión: ${moduleName}`, 'warning');
         });
+        
+        // 2. Watcher para cambios locales (Local -> Firebase)
+        setupLocalChangeWatcher(moduleName);
+        
+        // 3. Sincronización inicial
+        performInitialSync(moduleName);
         
         // Guardar referencia del listener
         realtimeListeners.set(moduleName, unsubscribe);
         
+        console.log(`✅ Sync bidireccional activo para ${moduleName}`);
+        
     } catch (error) {
         console.error(`❌ Error configurando sync para ${moduleName}:`, error);
     }
+}
+
+// Función para detectar cambios locales
+function setupLocalChangeWatcher(moduleName) {
+    let lastLocalData = localStorage.getItem(moduleName) || '[]';
+    
+    // Polling cada 5 segundos para detectar cambios locales
+    setInterval(() => {
+        const currentLocalData = localStorage.getItem(moduleName) || '[]';
+        
+        if (currentLocalData !== lastLocalData) {
+            console.log(`📤 Cambios locales detectados en ${moduleName}`);
+            
+            try {
+                const parsedData = JSON.parse(currentLocalData);
+                syncLocalChangesToFirebase(moduleName, parsedData);
+                lastLocalData = currentLocalData;
+            } catch (error) {
+                console.error(`❌ Error procesando cambios locales: ${moduleName}`, error);
+            }
+        }
+    }, 5000);
+    
+    // Escuchar eventos personalizados de cambios
+    window.addEventListener(`${moduleName}Changed`, (event) => {
+        console.log(`🔄 Evento de cambio recibido para ${moduleName}`);
+        if (event.detail && Array.isArray(event.detail)) {
+            syncLocalChangesToFirebase(moduleName, event.detail);
+        }
+    });
+}
+
+// Función para sincronización inicial
+async function performInitialSync(moduleName) {
+    try {
+        console.log(`🔄 Sincronización inicial para ${moduleName}...`);
+        
+        const localData = JSON.parse(localStorage.getItem(moduleName) || '[]');
+        if (localData.length > 0) {
+            // Enviar datos locales a Firebase si no están allí
+            await syncLocalChangesToFirebase(moduleName, localData);
+        }
+        
+        // Cargar datos desde Firebase
+        const snapshot = await db.collection(moduleName).get();
+        const firebaseData = [];
+        snapshot.forEach((doc) => {
+            firebaseData.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        if (firebaseData.length > 0) {
+            const mergedData = mergeDataSources(localData, firebaseData, moduleName);
+            localStorage.setItem(moduleName, JSON.stringify(mergedData));
+            
+            // Notificar a la interfaz
+            notifyInterfaceUpdate(moduleName, mergedData);
+        }
+        
+        console.log(`✅ Sincronización inicial completada para ${moduleName}`);
+        
+    } catch (error) {
+        console.error(`❌ Error en sincronización inicial de ${moduleName}:`, error);
+    }
+}
+
+// Función para fusionar datos de múltiples fuentes
+function mergeDataSources(localData, firebaseData, moduleName) {
+    try {
+        // Crear mapa de elementos por ID para facilitar comparación
+        const localMap = new Map(localData.map(item => [item.id, item]));
+        const firebaseMap = new Map(firebaseData.map(item => [item.id, item]));
+        
+        const merged = [];
+        const allIds = new Set([...localMap.keys(), ...firebaseMap.keys()]);
+        
+        allIds.forEach(id => {
+            const localItem = localMap.get(id);
+            const firebaseItem = firebaseMap.get(id);
+            
+            if (localItem && firebaseItem) {
+                // Ambos existen: usar el más reciente basado en timestamp
+                const localModified = localItem._lastModified || 0;
+                const firebaseModified = firebaseItem._lastModified || 0;
+                
+                merged.push(firebaseModified > localModified ? firebaseItem : localItem);
+            } else if (firebaseItem) {
+                // Solo existe en Firebase
+                merged.push(firebaseItem);
+            } else if (localItem) {
+                // Solo existe localmente: lo enviaremos a Firebase
+                merged.push(localItem);
+                // Programar sincronización hacia Firebase
+                setTimeout(() => {
+                    syncLocalChangesToFirebase(moduleName, [localItem]);
+                }, 1000);
+            }
+        });
+        
+        return merged;
+    } catch (error) {
+        console.error(`❌ Error fusionando datos para ${moduleName}:`, error);
+        return localData; // Fallback a datos locales
+    }
+}
+
+// Función para verificar si hay cambios reales
+function hasRealChanges(data1, data2) {
+    try {
+        if (data1.length !== data2.length) return true;
+        
+        const sorted1 = [...data1].sort((a, b) => (a.id || '').localeCompare(b.id || ''));
+        const sorted2 = [...data2].sort((a, b) => (a.id || '').localeCompare(b.id || ''));
+        
+        return JSON.stringify(sorted1) !== JSON.stringify(sorted2);
+    } catch (error) {
+        console.error('❌ Error comparando datos:', error);
+        return true; // En caso de error, asumir que hay cambios
+    }
+}
+
+// Función para enviar cambios locales a Firebase
+async function syncLocalChangesToFirebase(moduleName, localData) {
+    if (!isFirebaseEnabled || !db) return;
+    
+    try {
+        const lastSync = lastSyncTime.get(moduleName) || 0;
+        const now = Date.now();
+        
+        // Evitar loops de sincronización
+        if (now - lastSync < 3000) return;
+        
+        console.log(`📤 Enviando cambios locales de ${moduleName} a Firebase...`);
+        
+        // Procesar cada elemento
+        for (const item of localData) {
+            if (!item.id) continue;
+            
+            const itemWithTimestamp = {
+                ...item,
+                _lastModified: now
+            };
+            
+            await db.collection(moduleName).doc(item.id.toString()).set(itemWithTimestamp, { merge: true });
+        }
+        
+        lastSyncTime.set(moduleName, now);
+        console.log(`✅ Cambios de ${moduleName} sincronizados a Firebase`);
+        
+    } catch (error) {
+        console.error(`❌ Error sincronizando ${moduleName} a Firebase:`, error);
+    }
+}
+
+// Función para notificar cambios a la interfaz
+function notifyInterfaceUpdate(moduleName, newData) {
+    // Notificar mediante evento personalizado
+    window.dispatchEvent(new CustomEvent(`${moduleName}Updated`, {
+        detail: { data: newData, source: 'firebase' }
+    }));
+    
+    // Notificar específicamente a módulos activos
+    if (window.location.pathname.includes(moduleName)) {
+        // Estamos en el módulo afectado, recargar datos
+        if (window.renderTable && typeof window.renderTable === 'function') {
+            setTimeout(() => window.renderTable(newData), 100);
+        }
+        
+        if (window.updateStats && typeof window.updateStats === 'function') {
+            setTimeout(() => window.updateStats(), 100);
+        }
+    }
+}
+
+// Función para configurar heartbeat de conexión
+function setupSyncHeartbeat() {
+    setInterval(async () => {
+        if (!isFirebaseEnabled) return;
+        
+        try {
+            // Ping simple a Firebase para mantener conexión activa
+            await db.collection('_heartbeat').doc('ping').set({
+                timestamp: Date.now(),
+                source: 'webapp'
+            }, { merge: true });
+            
+            notifyDashboardConnectionStatus(true);
+        } catch (error) {
+            console.warn('⚠️ Heartbeat falló - posible desconexión:', error);
+            notifyDashboardConnectionStatus(false);
+        }
+    }, 30000); // Cada 30 segundos
 }
 
 // Función para mostrar notificaciones de sincronización
