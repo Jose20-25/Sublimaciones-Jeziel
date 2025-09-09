@@ -982,7 +982,7 @@
                     showSyncNotification('📱 Inventario cargado localmente', 'info');
                 } else {
                     console.log('🆕 No hay datos guardados, usando datos de ejemplo');
-                    loadSampleData();
+                    loadDefaultData();
                 }
                 
                 if (savedCounters) {
@@ -992,8 +992,9 @@
             } catch (error) {
                 console.error('❌ Error al cargar datos:', error);
                 showSyncNotification('❌ Error al cargar datos', 'error');
-                loadSampleData(); // Cargar datos de ejemplo como último recurso
+                loadDefaultData(); // Cargar datos de ejemplo como último recurso
             }
+        }
                 
         function calculateCategoryCounters() {
             // Reiniciar contadores
@@ -1214,6 +1215,24 @@
             'Acrilico': 1
         };
 
+        // Función de debug para verificar el estado
+        function debugInventory() {
+            console.log('=== DEBUG INVENTARIO ===');
+            console.log('inventoryData:', inventoryData);
+            console.log('categoryCounters:', categoryCounters);
+            console.log('currentEditId:', currentEditId);
+            console.log('Longitud inventoryData:', inventoryData.length);
+            if (inventoryData.length > 0) {
+                console.log('Primer producto:', inventoryData[0]);
+                console.log('IDs existentes:', inventoryData.map(p => p.id));
+                console.log('Máximo ID:', Math.max(...inventoryData.map(p => p.id)));
+            }
+            console.log('========================');
+        }
+
+        // Hacer función disponible globalmente para debug
+        window.debugInventory = debugInventory;
+
         // Función para generar código automático según categoría
         function generateProductCode() {
             const category = document.getElementById('productCategory').value;
@@ -1265,48 +1284,6 @@
                 }
                 nextNumber++;
             }
-        }
-
-        // Función para calcular ganancia automáticamente
-        function calculateProfit() {
-            const costPrice = parseFloat(document.getElementById('productCostPrice').value) || 0;
-            const salePrice = parseFloat(document.getElementById('productSalePrice').value) || 0;
-
-            if (costPrice > 0 && salePrice > 0) {
-                const profitAmount = salePrice - costPrice;
-                const profitPercent = (profitAmount / costPrice) * 100;
-
-                document.getElementById('productProfitAmount').value = profitAmount.toFixed(2);
-                document.getElementById('productProfitPercent').value = profitPercent.toFixed(2);
-            } else {
-                document.getElementById('productProfitAmount').value = '';
-                document.getElementById('productProfitPercent').value = '';
-            }
-        }
-
-        // Función para generar código automático según categoría
-        function generateProductCode() {
-            const category = document.getElementById('productCategory').value;
-            if (!category) return;
-
-            const categoryPrefixes = {
-                'Textil': 'TEX',
-                'Aluminio': 'ALU',
-                'MDF': 'MDF',
-                'Ceramica': 'CER',
-                'Vidrio': 'VID',
-                'Neopreno': 'NEO',
-                'Acrilico': 'ACR'
-            };
-
-            // Si estamos editando, mantener el código existente
-            if (currentEditId) return;
-
-            const prefix = categoryPrefixes[category];
-            const nextNumber = categoryCounters[category] + 1;
-            const code = `${prefix}-${nextNumber.toString().padStart(3, '0')}`;
-            
-            document.getElementById('productCode').value = code;
         }
 
         // Función para calcular ganancia automáticamente
@@ -1868,9 +1845,13 @@
         document.getElementById('productForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            console.log('=== INTENTANDO AGREGAR/EDITAR PRODUCTO ===');
+            console.log('Estado actual del inventario:', inventoryData.length, 'productos');
+            console.log('currentEditId:', currentEditId);
+            
             // Validaciones
             const name = document.getElementById('productName').value.trim();
-            const code = document.getElementById('productCode').value.trim();
+            let code = document.getElementById('productCode').value.trim();
             const category = document.getElementById('productCategory').value;
             const costPrice = parseFloat(document.getElementById('productCostPrice').value);
             const salePrice = parseFloat(document.getElementById('productSalePrice').value);
@@ -1951,15 +1932,25 @@
                 }
             } else {
                 // Agregar nuevo producto
-                const newId = Math.max(...inventoryData.map(p => p.id)) + 1;
+                console.log('Agregando nuevo producto...');
+                console.log('inventoryData actual:', inventoryData);
+                console.log('Longitud antes de agregar:', inventoryData.length);
+                
+                const newId = inventoryData.length > 0 ? Math.max(...inventoryData.map(p => p.id)) + 1 : 1;
+                console.log('Nuevo ID calculado:', newId);
+                
                 const newProduct = { id: newId, ...formData };
+                console.log('Nuevo producto a agregar:', newProduct);
+                
                 inventoryData.push(newProduct);
+                console.log('Longitud después de agregar:', inventoryData.length);
                 
                 // Actualizar contador de categoría
                 if (categoryCounters[category] !== undefined) {
                     categoryCounters[category]++;
+                    console.log('Contador actualizado para', category, ':', categoryCounters[category]);
                 }
-                console.log('Producto agregado:', newProduct);
+                console.log('Producto agregado exitosamente:', newProduct);
             }
 
             // Actualizar vista
