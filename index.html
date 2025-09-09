@@ -197,6 +197,47 @@
         .user-menu:hover {
             background: #edf2f7;
         }
+        
+        /* Indicador de sincronización */
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .sync-indicator.connected {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+        
+        .sync-indicator.disconnected {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+            border-color: rgba(244, 67, 54, 0.3);
+        }
+        
+        .sync-indicator.syncing {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+            border-color: rgba(33, 150, 243, 0.3);
+        }
+        
+        .sync-indicator i.fa-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
         .user-avatar {
             width: 32px;
@@ -522,6 +563,12 @@
         <header class="header">
             <h1 class="header-title">Dashboard Principal</h1>
             <div class="header-actions">
+                <!-- Indicador de sincronización -->
+                <div id="syncIndicator" class="sync-indicator disconnected" title="Estado de sincronización Firebase">
+                    <i id="syncIcon" class="fas fa-cloud-slash"></i>
+                    <span id="syncText">Sin conexión</span>
+                </div>
+                
                 <button class="notification-btn">
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge">5</span>
@@ -790,6 +837,65 @@
             } catch (error) {
                 console.error('❌ Error en navegación:', error);
                 alert(`Error al navegar a ${module}. Por favor, intenta de nuevo.`);
+            }
+        }
+
+        // Funciones para manejar el indicador de sincronización
+        function updateSyncIndicator(status, message = '') {
+            const indicator = document.getElementById('syncIndicator');
+            const icon = document.getElementById('syncIcon');
+            const text = document.getElementById('syncText');
+            
+            if (!indicator || !icon || !text) return;
+            
+            // Limpiar clases previas
+            indicator.classList.remove('connected', 'disconnected', 'syncing');
+            icon.classList.remove('fa-spin');
+            
+            switch (status) {
+                case 'connected':
+                    indicator.classList.add('connected');
+                    icon.className = 'fas fa-cloud-check';
+                    text.textContent = message || 'Sincronizado';
+                    break;
+                case 'syncing':
+                    indicator.classList.add('syncing');
+                    icon.className = 'fas fa-sync-alt fa-spin';
+                    text.textContent = message || 'Sincronizando...';
+                    break;
+                case 'disconnected':
+                default:
+                    indicator.classList.add('disconnected');
+                    icon.className = 'fas fa-cloud-slash';
+                    text.textContent = message || 'Sin conexión';
+                    break;
+            }
+        }
+        
+        // Verificar estado de Firebase periódicamente
+        function checkFirebaseStatus() {
+            if (window.firebaseUtils && typeof window.firebaseUtils.isEnabled === 'function') {
+                const isEnabled = window.firebaseUtils.isEnabled();
+                if (isEnabled) {
+                    updateSyncIndicator('connected', 'Firebase activo');
+                    
+                    // Verificar conexión real
+                    window.firebaseUtils.checkConnection()
+                        .then(connected => {
+                            if (connected) {
+                                updateSyncIndicator('connected', 'En línea');
+                            } else {
+                                updateSyncIndicator('disconnected', 'Sin conexión');
+                            }
+                        })
+                        .catch(() => {
+                            updateSyncIndicator('disconnected', 'Error de conexión');
+                        });
+                } else {
+                    updateSyncIndicator('disconnected', 'Firebase deshabilitado');
+                }
+            } else {
+                updateSyncIndicator('disconnected', 'Firebase no configurado');
             }
         }
 
@@ -1719,6 +1825,56 @@
             });
             
             console.log('✅ Event listeners de navegación configurados');
+            
+            // Inicializar indicador de sincronización
+            console.log('🔄 Inicializando indicador de sincronización...');
+            updateSyncIndicator('disconnected', 'Iniciando...');
+            
+            // Verificar estado inicial de Firebase después de un breve delay
+            setTimeout(() => {
+                checkFirebaseStatus();
+            }, 2000);
+            
+            // Verificar estado cada 30 segundos
+            setInterval(checkFirebaseStatus, 30000);
+            
+            // Event listener para clics en el indicador
+            const syncIndicator = document.getElementById('syncIndicator');
+            if (syncIndicator) {
+                syncIndicator.addEventListener('click', function() {
+                    console.log('🔄 Forzando verificación de estado...');
+                    updateSyncIndicator('syncing', 'Verificando...');
+                    setTimeout(checkFirebaseStatus, 500);
+                });
+            }
+            
+            // Escuchar eventos de sincronización personalizados
+            window.addEventListener('firebaseConnected', function() {
+                updateSyncIndicator('connected', 'Conectado');
+            });
+            
+            window.addEventListener('firebaseDisconnected', function() {
+                updateSyncIndicator('disconnected', 'Sin conexión');
+            });
+            
+            window.addEventListener('firebaseSyncing', function(e) {
+                const module = e.detail ? e.detail.module : '';
+                updateSyncIndicator('syncing', module ? `Sync ${module}...` : 'Sincronizando...');
+            });
+            
+            // Escuchar notificaciones de sincronización exitosa
+            ['ventasUpdated', 'inventarioUpdated', 'clientesUpdated', 'proveedoresUpdated', 'comprasUpdated', 'facturasUpdated'].forEach(eventName => {
+                window.addEventListener(eventName, function(e) {
+                    const module = eventName.replace('Updated', '');
+                    console.log(`📝 Datos actualizados: ${module}`);
+                    
+                    // Mostrar brevemente que se actualizó este módulo
+                    updateSyncIndicator('connected', `${module} actualizado`);
+                    setTimeout(() => {
+                        updateSyncIndicator('connected', 'En línea');
+                    }, 2000);
+                });
+            });
             
             // Función de diagnóstico (solo para debugging)
             window.testNavigation = function() {
